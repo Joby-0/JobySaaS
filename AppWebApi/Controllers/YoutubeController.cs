@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Models;
 using Services;
 
 namespace AppWebApi.Controllers;
@@ -30,6 +31,26 @@ public class YoutubeController : ControllerBase
     public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string scope)
     {
         var result = await _service.Callback(code);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("upload")]
+    public async Task<IActionResult> Upload(IFormFile video, [FromForm] string title, [FromForm] string description, [FromForm] string categoryId, [FromForm] ISocialAccount socialAccount)
+    {
+        if (video == null || video.Length == 0)
+        {
+            return BadRequest(ServiceResult.Fail("No video was uploaded."));
+        }
+        if (!video.ContentType.StartsWith("video/"))
+        {
+            return BadRequest(ServiceResult.Fail("The uploaded file is not a video."));
+        }
+
+        var result = await _service.UploadVideoAsync(video, title, description, categoryId, socialAccount);
 
         if (!result.Success)
             return BadRequest(result);

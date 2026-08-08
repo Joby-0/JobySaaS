@@ -1,6 +1,7 @@
 using DbContext;
 using DbModels;
 using Microsoft.EntityFrameworkCore;
+using Models;
 
 namespace DbRepos;
 
@@ -29,5 +30,26 @@ public class YoutubeDbRepo
         }
 
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateSocialAccountAsync(Guid id, ISocialAccount update)
+    {
+        var existing = await _dbContext.SocialAccounts
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (existing != null)
+        {
+            existing.AccessToken = update.AccessToken;
+            existing.RefreshToken = update.RefreshToken;
+            existing.TokenExpires = update.TokenExpires;
+
+            await _dbContext.SaveChangesAsync();
+        }
+    }
+
+    public async Task<ISocialAccount?> GetSocialAccountByIdAsync(Guid id)
+    {
+        return await _dbContext.SocialAccounts
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 }
