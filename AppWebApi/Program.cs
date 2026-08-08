@@ -2,22 +2,29 @@ using DbContext;
 using DbContext.Extensions;
 using DbRepos;
 using Services;
+using Configuration.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
+//adding support for several secret sources and database sources
+//to use either user secrets or azure key vault depending on UseAzureKeyVault tag in appsettings.json
+builder.Configuration.AddSecrets( "AppWebApi");
 
 builder.Services.AddJwtTokenService(builder.Configuration);
 builder.Services.AddReferenceDbContext(builder.Configuration);
 
 builder.Services.AddScoped<ProductDbRepo>();
 builder.Services.AddScoped<IProductService, ProductServiceDb>();
+
+builder.Services.AddScoped<YoutubeDbRepo>();
+builder.Services.AddScoped<IYoutubeService, YoutubeService>();
 
 builder.Services.AddAuthorization(options =>
 {

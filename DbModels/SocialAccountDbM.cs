@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Models;
 
 namespace DbModels;
 
-public class SocialAccountDbM
+public class SocialAccountDbM : SocialAccount
 {
     [Key]
     public Guid Id { get; set; }
@@ -21,6 +22,8 @@ public class SocialAccountDbM
 
     [Required]
     public string AccessToken { get; set; }
+    [Required]
+    public string RefreshToken { get; set; }
 
     public DateTime TokenExpires { get; set; }
 

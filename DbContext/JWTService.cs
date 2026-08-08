@@ -1,4 +1,4 @@
-using Configuration.Options;
+using Configuration;
 using Microsoft.Extensions.Options;
 using Models.DTO;
 using System.IdentityModel.Tokens.Jwt;

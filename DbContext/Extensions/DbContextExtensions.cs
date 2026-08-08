@@ -1,4 +1,4 @@
-using Configuration.Options;
+using Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

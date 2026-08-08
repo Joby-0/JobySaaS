@@ -11,6 +11,7 @@ public interface ISocialAccount
     string Username { get; set; }
 
     string AccessToken { get; set; }
+    string RefreshToken { get; set; }
 
     DateTime TokenExpires { get; set; }
 

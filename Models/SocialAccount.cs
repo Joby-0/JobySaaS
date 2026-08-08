@@ -7,6 +7,7 @@ public class SocialAccount : ISocialAccount
     public string Platform { get; set; }
     public string Username { get; set; }
     public string AccessToken { get; set; }
+    public string RefreshToken { get; set; }
     public DateTime TokenExpires { get; set; }
     public IOrganization Organization { get; set; } = null!;
 }
