@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using Models;
 namespace DbModels;
 
-public class UserOrganizationDbM
+public class UserOrganizationDbM : UserOrganization
 {
     [Key]
     public Guid Id { get; set; }

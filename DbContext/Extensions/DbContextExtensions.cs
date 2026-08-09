@@ -11,13 +11,13 @@ namespace DbContext.Extensions;
 
 public static class DbContextExtensions
 {
-    public static IServiceCollection AddReferenceDbContext(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddMainDbContext(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ReferenceDbContext>(options =>
+        var connectionString =configuration.GetConnectionString("DefaultConnection");
+
+        services.AddDbContext<MainDbContext>(options =>
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? "Data Source=ReferenceDb.db";
-            options.UseSqlite(connectionString);
+            options.UseMySql(connectionString,ServerVersion.AutoDetect(connectionString));
         });
 
         return services;

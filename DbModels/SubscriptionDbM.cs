@@ -4,7 +4,7 @@ using Models;
 
 namespace DbModels;
 
-public class SubscriptionDbM
+public class SubscriptionDbM : Subscription
 {
     [Key]
     public Guid Id { get; set; }

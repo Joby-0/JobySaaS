@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Models;
 
 namespace DbModels;
 
-public class PostAnalyticsDbM
+public class PostAnalyticsDbM : PostAnalytics
 {
     [Key]
     public Guid Id { get; set; }

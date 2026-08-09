@@ -3,6 +3,7 @@ using DbContext.Extensions;
 using DbRepos;
 using Services;
 using Configuration.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,10 +19,8 @@ builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.Environment
 builder.Configuration.AddSecrets( "AppWebApi");
 
 builder.Services.AddJwtTokenService(builder.Configuration);
-builder.Services.AddReferenceDbContext(builder.Configuration);
+builder.Services.AddMainDbContext(builder.Configuration);
 
-builder.Services.AddScoped<ProductDbRepo>();
-builder.Services.AddScoped<IProductService, ProductServiceDb>();
 
 builder.Services.AddScoped<YoutubeDbRepo>();
 builder.Services.AddScoped<IYoutubeService, YoutubeService>();
@@ -30,6 +29,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
+
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -81,8 +81,11 @@ app.MapGet("/", () => "ApiReference is running.");
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ReferenceDbContext>();
-    db.Database.EnsureCreated();
+    var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+
+    var connected = await db.Database.CanConnectAsync();
+
+    Console.WriteLine($"MySQL connected: {connected}");
 }
 
 app.Run();

@@ -7,9 +7,9 @@ namespace DbRepos;
 
 public class YoutubeDbRepo
 {
-    readonly ReferenceDbContext _dbContext;
+    readonly MainDbContext _dbContext;
 
-    public YoutubeDbRepo(ReferenceDbContext dbContext)
+    public YoutubeDbRepo(MainDbContext dbContext)
     {
         _dbContext = dbContext;
     }

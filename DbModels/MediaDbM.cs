@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Models;
 
 namespace DbModels;
 
-public class MediaDbM
+public class MediaDbM : Media
 {
     [Key]
     public Guid Id { get; set; }

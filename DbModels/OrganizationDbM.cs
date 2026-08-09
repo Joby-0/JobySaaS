@@ -4,7 +4,7 @@ using Models;
 
 namespace DbModels;
 
-public class OrganizationDbM
+public class OrganizationDbM : Organization
 {
     [Key]
     public Guid Id { get; set; }
