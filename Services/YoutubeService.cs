@@ -118,7 +118,7 @@ public class YoutubeService : IYoutubeService
 
 
             // Save SocialAccount here
-            await _repo.SaveSocialAccountAsync(new SocialAccountDbM
+            var result = await _repo.SaveSocialAccountAsync(new SocialAccountDbM
             {
                 Platform = "YouTube",
                 Username = username,
@@ -128,6 +128,9 @@ public class YoutubeService : IYoutubeService
                 TokenExpires = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresInSeconds ?? 0),
                 OrganizationId = Guid.NewGuid() // Replace with actual organization ID in a real implementation.
             });
+            if(result.Contains("Failed")){
+                return ServiceResult.Fail(result);
+            }
 
             return ServiceResult.Ok("YouTube account connected successfully.");
         }

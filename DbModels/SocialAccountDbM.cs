@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Models;
 
 namespace DbModels;
@@ -7,26 +8,15 @@ namespace DbModels;
 public class SocialAccountDbM : SocialAccount
 {
     [Key]
-    public Guid Id { get; set; }
+    public override Guid Id { get; set; }
 
     [Required]
-    public Guid OrganizationId { get; set; }
-
-    [Required]
-    [StringLength(120)]
-    public string Platform { get; set; }
-
-    [Required]
-    [StringLength(120)]
-    public string Username { get; set; }
-
-    [Required]
-    public string AccessToken { get; set; }
-    [Required]
-    public string RefreshToken { get; set; }
-
-    public DateTime TokenExpires { get; set; }
+    public override Guid OrganizationId { get; set; }
 
     [ForeignKey(nameof(OrganizationId))]
-    public OrganizationDbM Organization { get; set; } = null!;
+    [JsonIgnore]
+    public OrganizationDbM OrganizationDbM { get; set; } = null!;
+
+    [NotMapped]
+    public override IOrganization Organization { get => OrganizationDbM ; set => new NotImplementedException(); }
 }

@@ -2,7 +2,6 @@ using DbContext;
 using DbModels;
 using Microsoft.EntityFrameworkCore;
 using Models;
-
 namespace DbRepos;
 
 public class YoutubeDbRepo
@@ -14,22 +13,32 @@ public class YoutubeDbRepo
         _dbContext = dbContext;
     }
 
-    public async Task SaveSocialAccountAsync(SocialAccountDbM account)
+    public async Task<string> SaveSocialAccountAsync(SocialAccountDbM account)
     {
-        var existing = await _dbContext.SocialAccounts
-            .FirstOrDefaultAsync(x => x.Platform == "YouTube" && x.Username == account.Username && x.OrganizationId == account.OrganizationId);
-
-        if (existing != null)
+        try
         {
-            existing.AccessToken = account.AccessToken;
-            existing.TokenExpires = account.TokenExpires;
-        }
-        else
-        {
-            _dbContext.SocialAccounts.Add(account);
-        }
+            var existing = await _dbContext.SocialAccounts.FirstOrDefaultAsync(x => x.Platform == "YouTube" && x.Username == account.Username && x.OrganizationId == account.OrganizationId);
 
-        await _dbContext.SaveChangesAsync();
+            if (existing != null)
+            {
+                existing.AccessToken = account.AccessToken;
+                existing.TokenExpires = account.TokenExpires;
+            }
+            else
+            {
+                account.Id = Guid.NewGuid();
+                _dbContext.SocialAccounts.Add(account);
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return "YouTube account connected successfully.";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+
+            return $"Failed to connect YouTube account: {ex.InnerException?.Message ?? ex.Message}";
+        }
     }
 
     public async Task UpdateSocialAccountAsync(Guid id, ISocialAccount update)

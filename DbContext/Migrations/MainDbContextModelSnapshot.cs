@@ -163,28 +163,22 @@ namespace DbContext.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<string>("AccessToken")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Platform")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("RefreshToken")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("TokenExpires")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -333,13 +327,13 @@ namespace DbContext.Migrations
 
             modelBuilder.Entity("DbModels.SocialAccountDbM", b =>
                 {
-                    b.HasOne("DbModels.OrganizationDbM", "Organization")
+                    b.HasOne("DbModels.OrganizationDbM", "OrganizationDbM")
                         .WithMany("SocialAccounts")
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Organization");
+                    b.Navigation("OrganizationDbM");
                 });
 
             modelBuilder.Entity("DbModels.SubscriptionDbM", b =>

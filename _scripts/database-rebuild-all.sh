@@ -2,15 +2,23 @@
 
 set -e
 
+# Move from _script/ to the solution root
+cd "$(dirname "$0")/.."
+
 echo "======================================"
 echo "        Resetting SaaS Database"
 echo "======================================"
 
-PROJECT="DbContext"
-STARTUP_PROJECT="AppWebApi"
+PROJECT="DbContext/DbContext.csproj"
+STARTUP_PROJECT="AppWebApi/AppWebApi.csproj"
+
+echo ""
+echo "Working directory:"
+pwd
 
 echo ""
 echo "1. Dropping database..."
+
 dotnet ef database drop \
     --project "$PROJECT" \
     --startup-project "$STARTUP_PROJECT" \
@@ -22,8 +30,9 @@ echo "2. Removing migrations..."
 while dotnet ef migrations remove \
     --project "$PROJECT" \
     --startup-project "$STARTUP_PROJECT" \
-    --force 2>/dev/null; do
-    echo "Removed migration."
+    --force 2>/dev/null
+do
+    echo "Migration removed."
 done
 
 echo ""
