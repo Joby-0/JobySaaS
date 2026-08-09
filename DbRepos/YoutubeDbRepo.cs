@@ -58,7 +58,6 @@ public class YoutubeDbRepo
 
     public async Task<ISocialAccount?> GetSocialAccountByIdAsync(Guid id)
     {
-        return await _dbContext.SocialAccounts
-            .FirstOrDefaultAsync(x => x.Id == id);
+        return await _dbContext.SocialAccounts.FirstOrDefaultAsync(x => x.Id == id);
     }
 }

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#Kör chmod +x database-rebuild-all.sh för att göra den körbar
+#För att köra den, använd kommandot: ./database-rebuild-all.sh
+
 set -e
 
 # Move from _script/ to the solution root

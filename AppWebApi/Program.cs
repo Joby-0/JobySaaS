@@ -4,6 +4,7 @@ using DbRepos;
 using Services;
 using Configuration.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,10 +21,13 @@ builder.Configuration.AddSecrets( "AppWebApi");
 
 builder.Services.AddJwtTokenService(builder.Configuration);
 builder.Services.AddMainDbContext(builder.Configuration);
+builder.Services.AddEncryptions(builder.Configuration);
 
 
 builder.Services.AddScoped<YoutubeDbRepo>();
 builder.Services.AddScoped<IYoutubeService, YoutubeService>();
+builder.Services.AddScoped<AuthDbRepo>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -69,7 +73,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiReference v1"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AllMedia API v1"));
 }
 
 app.UseHttpsRedirection();

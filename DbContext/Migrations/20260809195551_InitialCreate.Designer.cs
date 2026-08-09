@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DbContext.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20260809101511_InitialCreate")]
+    [Migration("20260809195551_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -232,21 +232,34 @@ namespace DbContext.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("Created_at")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
+                        .HasColumnType("longtext");
 
-                    b.Property<string>("Passwordhash")
-                        .IsRequired()
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Updated_at")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UserName")
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
@@ -359,7 +372,7 @@ namespace DbContext.Migrations
                         .IsRequired();
 
                     b.HasOne("DbModels.UserDbM", "User")
-                        .WithMany("Organizations")
+                        .WithMany("UserOrganizationDbms")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -384,7 +397,7 @@ namespace DbContext.Migrations
 
             modelBuilder.Entity("DbModels.UserDbM", b =>
                 {
-                    b.Navigation("Organizations");
+                    b.Navigation("UserOrganizationDbms");
                 });
 #pragma warning restore 612, 618
         }

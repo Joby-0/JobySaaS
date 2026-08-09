@@ -1,4 +1,4 @@
-namespace Configuration;
+namespace Configuration.Options;
 
 public class JwtOptions
 {
