@@ -8,13 +8,14 @@ using Models.DTO;
 using Configuration.Options;
 
 namespace DbContext;
+
 public class JWTService
 {
     private readonly JwtOptions _jwtOptions;
 
     public JWTService(IOptions<JwtOptions> jwtOptions)
     {
-        _jwtOptions = jwtOptions.Value;        
+        _jwtOptions = jwtOptions.Value;
     }
 
     //Create a list of claims to encrypt into the JWT token
@@ -52,7 +53,7 @@ public class JWTService
             audience: _jwtOptions.ValidAudience,
             claims: CreateClaims(_usrSession, out tokenId),
             notBefore: new DateTimeOffset(DateTime.UtcNow).DateTime,
-            expires: new DateTimeOffset(expireTime).DateTime,
+            expires: expireTime,
             signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256));
 
         //generate a JWT user token with some unencrypted information as well

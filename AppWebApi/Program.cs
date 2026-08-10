@@ -28,6 +28,8 @@ builder.Services.AddScoped<YoutubeDbRepo>();
 builder.Services.AddScoped<IYoutubeService, YoutubeService>();
 builder.Services.AddScoped<AuthDbRepo>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<OrganizationDbRepo>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 
 builder.Services.AddAuthorization(options =>
 {
