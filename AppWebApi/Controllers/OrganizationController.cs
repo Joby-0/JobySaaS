@@ -66,10 +66,10 @@ namespace AppWebApi.Controllers
         }
 
         //Todo 
-        //GET /organizations/{id}/members
-        //GET /organizations/{id}/social-accounts
-        //GET /organizations/{id}/subscription
-        //GET /organizations/{id}/posts
-        //GET /organizations/{id}/analytics
+        //GET /organization/{id}/members
+        //GET /organization/{id}/social-accounts
+        //GET /organization/{id}/subscription
+        //GET /organization/{id}/posts
+        //GET /organization/{id}/analytics
     }
 }
