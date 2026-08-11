@@ -64,5 +64,12 @@ namespace AppWebApi.Controllers
             }
             return Ok(organization);
         }
+
+        //Todo 
+        //GET /organizations/{id}/members
+        //GET /organizations/{id}/social-accounts
+        //GET /organizations/{id}/subscription
+        //GET /organizations/{id}/posts
+        //GET /organizations/{id}/analytics
     }
 }
