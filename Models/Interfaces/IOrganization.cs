@@ -8,7 +8,7 @@ public interface IOrganization
     Guid OwnerId { get; set; }
 
 
-    ISubscription Subscription { get; set; }
+    ISubscription? Subscription { get; set; }
     List<IUserOrganization> Users { get; set; }
     List<ISocialAccount> SocialAccounts { get; set; }
     List<IPost> Posts { get; set; }

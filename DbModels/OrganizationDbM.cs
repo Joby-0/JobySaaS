@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Models;
 
 namespace DbModels;
@@ -7,20 +8,34 @@ namespace DbModels;
 public class OrganizationDbM : Organization
 {
     [Key]
-    public Guid Id { get; set; }
+    public override Guid Id { get; set; }
 
-    [Required]
-    [StringLength(120)]
-    public string Name { get; set; }
+    [NotMapped]
+    public override ISubscription? Subscription { get => SubscriptionDbM; set => new NotImplementedException(); }
+    [JsonIgnore]
+    public Guid? SubscriptionId { get; set; }
+    [ForeignKey("SubscriptionId")]
+    [JsonIgnore]
+    public SubscriptionDbM? SubscriptionDbM { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    
+    [NotMapped]
+    public override List<IUserOrganization> Users { get => UserOrganizationDbMs?.ToList<IUserOrganization>(); set => new NotImplementedException(); }
+    [JsonIgnore]
+    public ICollection<UserOrganizationDbM> UserOrganizationDbMs { get; set; }
 
-    [Required]
-    public Guid OwnerId { get; set; }
+    [NotMapped]
+    public override List<ISocialAccount> SocialAccounts { get => SocialAccountDbMs?.ToList<ISocialAccount>(); set => new NotImplementedException(); }
+    [JsonIgnore]
+    public ICollection<SocialAccountDbM> SocialAccountDbMs { get; set; } = new List<SocialAccountDbM>();
 
-    public SubscriptionDbM Subscription { get; set; } = null!;
-    public ICollection<UserOrganizationDbM> Users { get; set; } = new List<UserOrganizationDbM>();
-    public ICollection<SocialAccountDbM> SocialAccounts { get; set; } = new List<SocialAccountDbM>();
-    public ICollection<PostDbM> Posts { get; set; } = new List<PostDbM>();
-    public ICollection<MediaDbM> Media { get; set; } = new List<MediaDbM>();
+    [NotMapped]
+     public override List<IPost> Posts { get => PostsDbMs?.ToList<IPost>(); set => new NotImplementedException(); }
+    [JsonIgnore]
+    public ICollection<PostDbM> PostsDbMs { get; set; } = new List<PostDbM>();
+
+    [NotMapped]
+    public override List<IMedia> Media { get => MediaDbMs?.ToList<IMedia>(); set => new NotImplementedException(); }
+    [JsonIgnore]
+    public ICollection<MediaDbM> MediaDbMs { get; set; } = new List<MediaDbM>();
 }

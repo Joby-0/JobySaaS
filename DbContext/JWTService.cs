@@ -30,8 +30,9 @@ public class JWTService
             new Claim("UserName", usrSession.UserName),
 
             //used by Microsoft.AspNetCore.Authentication and used in the HTTP request pipeline
+            new Claim(JwtRegisteredClaimNames.Jti, TokenId.ToString()),
             new Claim(ClaimTypes.Role, usrSession.UserRole.ToString()),
-            new Claim(ClaimTypes.NameIdentifier, TokenId.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, usrSession.UserId.ToString()),
             new Claim(ClaimTypes.Expiration, DateTime.UtcNow.AddMinutes(_jwtOptions.LifeTimeMinutes).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
         };
         return claims;

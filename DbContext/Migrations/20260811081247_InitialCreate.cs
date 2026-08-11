@@ -15,22 +15,6 @@ namespace DbContext.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Organizations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    Name = table.Column<string>(type: "varchar(120)", maxLength: 120, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Organizations", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -79,12 +63,23 @@ namespace DbContext.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Media", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Media_Organizations_OrganizationId",
-                        column: x => x.OrganizationId,
-                        principalTable: "Organizations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Organizations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    SubscriptionId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    Name = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Organizations", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -149,7 +144,7 @@ namespace DbContext.Migrations
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     OrganizationId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    Role = table.Column<string>(type: "varchar(120)", maxLength: 120, nullable: false)
+                    Role = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -238,6 +233,11 @@ namespace DbContext.Migrations
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Organizations_SubscriptionId",
+                table: "Organizations",
+                column: "SubscriptionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PostAnalytics_PostId",
                 table: "PostAnalytics",
                 column: "PostId");
@@ -265,8 +265,7 @@ namespace DbContext.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_OrganizationId",
                 table: "Subscriptions",
-                column: "OrganizationId",
-                unique: true);
+                column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserOrganizations_OrganizationId",
@@ -277,16 +276,32 @@ namespace DbContext.Migrations
                 name: "IX_UserOrganizations_UserId",
                 table: "UserOrganizations",
                 column: "UserId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Media_Organizations_OrganizationId",
+                table: "Media",
+                column: "OrganizationId",
+                principalTable: "Organizations",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Organizations_Subscriptions_SubscriptionId",
+                table: "Organizations",
+                column: "SubscriptionId",
+                principalTable: "Subscriptions",
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "PostAnalytics");
+            migrationBuilder.DropForeignKey(
+                name: "FK_Subscriptions_Organizations_OrganizationId",
+                table: "Subscriptions");
 
             migrationBuilder.DropTable(
-                name: "Subscriptions");
+                name: "PostAnalytics");
 
             migrationBuilder.DropTable(
                 name: "UserOrganizations");
@@ -305,6 +320,9 @@ namespace DbContext.Migrations
 
             migrationBuilder.DropTable(
                 name: "Organizations");
+
+            migrationBuilder.DropTable(
+                name: "Subscriptions");
         }
     }
 }

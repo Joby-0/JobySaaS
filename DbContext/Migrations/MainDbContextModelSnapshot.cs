@@ -73,14 +73,17 @@ namespace DbContext.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("SubscriptionId")
+                        .HasColumnType("char(36)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("SubscriptionId");
 
                     b.ToTable("Organizations");
                 });
@@ -217,8 +220,7 @@ namespace DbContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrganizationId")
-                        .IsUnique();
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Subscriptions");
                 });
@@ -277,9 +279,7 @@ namespace DbContext.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
@@ -296,12 +296,21 @@ namespace DbContext.Migrations
             modelBuilder.Entity("DbModels.MediaDbM", b =>
                 {
                     b.HasOne("DbModels.OrganizationDbM", "Organization")
-                        .WithMany("Media")
+                        .WithMany("MediaDbMs")
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("DbModels.OrganizationDbM", b =>
+                {
+                    b.HasOne("DbModels.SubscriptionDbM", "SubscriptionDbM")
+                        .WithMany()
+                        .HasForeignKey("SubscriptionId");
+
+                    b.Navigation("SubscriptionDbM");
                 });
 
             modelBuilder.Entity("DbModels.PostAnalyticsDbM", b =>
@@ -324,7 +333,7 @@ namespace DbContext.Migrations
                         .IsRequired();
 
                     b.HasOne("DbModels.OrganizationDbM", null)
-                        .WithMany("Posts")
+                        .WithMany("PostsDbMs")
                         .HasForeignKey("OrganizationDbMId");
 
                     b.HasOne("DbModels.SocialAccountDbM", "SocialAccount")
@@ -341,7 +350,7 @@ namespace DbContext.Migrations
             modelBuilder.Entity("DbModels.SocialAccountDbM", b =>
                 {
                     b.HasOne("DbModels.OrganizationDbM", "OrganizationDbM")
-                        .WithMany("SocialAccounts")
+                        .WithMany("SocialAccountDbMs")
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -352,8 +361,8 @@ namespace DbContext.Migrations
             modelBuilder.Entity("DbModels.SubscriptionDbM", b =>
                 {
                     b.HasOne("DbModels.OrganizationDbM", "Organization")
-                        .WithOne("Subscription")
-                        .HasForeignKey("DbModels.SubscriptionDbM", "OrganizationId")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -362,39 +371,37 @@ namespace DbContext.Migrations
 
             modelBuilder.Entity("DbModels.UserOrganizationDbM", b =>
                 {
-                    b.HasOne("DbModels.OrganizationDbM", "Organization")
-                        .WithMany("Users")
+                    b.HasOne("DbModels.OrganizationDbM", "OrganizationDbM")
+                        .WithMany("UserOrganizationDbMs")
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DbModels.UserDbM", "User")
-                        .WithMany("UserOrganizationDbms")
+                    b.HasOne("DbModels.UserDbM", "UserDbM")
+                        .WithMany("UserOrganizationDbMs")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Organization");
+                    b.Navigation("OrganizationDbM");
 
-                    b.Navigation("User");
+                    b.Navigation("UserDbM");
                 });
 
             modelBuilder.Entity("DbModels.OrganizationDbM", b =>
                 {
-                    b.Navigation("Media");
+                    b.Navigation("MediaDbMs");
 
-                    b.Navigation("Posts");
+                    b.Navigation("PostsDbMs");
 
-                    b.Navigation("SocialAccounts");
+                    b.Navigation("SocialAccountDbMs");
 
-                    b.Navigation("Subscription");
-
-                    b.Navigation("Users");
+                    b.Navigation("UserOrganizationDbMs");
                 });
 
             modelBuilder.Entity("DbModels.UserDbM", b =>
                 {
-                    b.Navigation("UserOrganizationDbms");
+                    b.Navigation("UserOrganizationDbMs");
                 });
 #pragma warning restore 612, 618
         }

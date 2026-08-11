@@ -11,8 +11,8 @@ public class UserDbM : User
     public override Guid Id { get; set; }
 
     [NotMapped]
-    public override List<IUserOrganization> Organizations { get => UserOrganizationDbms?.ToList<IUserOrganization>(); set => new NotImplementedException(); }
+    public override List<IUserOrganization> Organizations { get => UserOrganizationDbMs?.ToList<IUserOrganization>(); set => new NotImplementedException(); }
 
     [JsonIgnore]
-    public List<UserOrganizationDbM> UserOrganizationDbms { get; set; }
+    public List<UserOrganizationDbM> UserOrganizationDbMs { get; set; }
 }

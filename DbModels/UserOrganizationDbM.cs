@@ -1,28 +1,29 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Models;
 namespace DbModels;
 
 public class UserOrganizationDbM : UserOrganization
 {
     [Key]
-    public Guid Id { get; set; }
+    public override Guid Id { get; set; }
 
-    [Required]
+    [NotMapped]
+    public override IUser User { get => UserDbM; set => new NotImplementedException(); }
+    [JsonIgnore]
     public Guid UserId { get; set; }
 
-    [Required]
+    [JsonIgnore]
+    [ForeignKey("UserId")]
+    public UserDbM UserDbM { get; set; }
+
+    [NotMapped]
+    public override IOrganization Organization { get => OrganizationDbM; set => new NotImplementedException(); }
+    [JsonIgnore]
     public Guid OrganizationId { get; set; }
-
-    [Required]
-    [StringLength(120)]
-    public string Role { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    [ForeignKey(nameof(UserId))]
-    public UserDbM User { get; set; } = null!;
-
-    [ForeignKey(nameof(OrganizationId))]
-    public OrganizationDbM Organization { get; set; } = null!;
+    
+    [JsonIgnore]
+    [ForeignKey("OrganizationId")]
+    public OrganizationDbM OrganizationDbM { get; set; }
 }

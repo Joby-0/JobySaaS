@@ -19,6 +19,13 @@ public class OrganizationDbRepo
         try
         {
             _dbContext.Organizations.Add(organization);
+            _dbContext.UserOrganizations.Add(new UserOrganizationDbM
+            {
+                UserId = organization.OwnerId,
+                OrganizationId = organization.Id,
+                Role = "Owner",
+                CreatedAt = DateTime.UtcNow
+            });
             await _dbContext.SaveChangesAsync();
             return organization;
         }
@@ -30,12 +37,12 @@ public class OrganizationDbRepo
     }
     public async Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId)
     {
-        var organization = await _dbContext.Organizations
-        .AsNoTracking()
-        .Include(x => x.Users)
-        .FirstOrDefaultAsync(o => o.Id == organizationId && o.Users.Any(u => u.UserId == requestUserId));
-
+            var organization = await _dbContext.Organizations.AsNoTracking().FirstOrDefaultAsync(o =>o.Id == organizationId &&
+            _dbContext.UserOrganizations.Any(uo =>
+                uo.OrganizationId == o.Id &&
+                uo.UserId == requestUserId));
 
         return organization;
     }
+
 }
