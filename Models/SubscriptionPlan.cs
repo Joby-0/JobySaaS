@@ -1,8 +1,8 @@
 namespace Models;
 
-public class Subscription : ISubscriptionPlan
+public class SubscriptionPlan : ISubscriptionPlan
 {
-    public Guid Id { get; set; }
+    public virtual Guid Id { get; set; }
     public string Name { get; set; }
     public string StripePriceId { get; set; }
     public int Price { get; set; }

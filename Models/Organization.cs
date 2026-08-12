@@ -6,7 +6,7 @@ public class Organization : IOrganization
     public string Name { get; set; }
     public DateTime CreatedAt { get; set; }
     public Guid OwnerId { get; set; }
-    public virtual ISubscription? Subscription { get; set; }
+    public virtual IOrganizationSubscription? OrganizationSubscription { get; set; }
     public virtual List<IUserOrganization> Users { get; set; }
     public virtual List<ISocialAccount> SocialAccounts { get; set; }
     public virtual List<IPost> Posts { get; set; }

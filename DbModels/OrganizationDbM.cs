@@ -11,12 +11,12 @@ public class OrganizationDbM : Organization
     public override Guid Id { get; set; }
 
     [NotMapped]
-    public override ISubscription? Subscription { get => SubscriptionDbM; set => new NotImplementedException(); }
+    public override IOrganizationSubscription? OrganizationSubscription { get => OrganizationSubscriptionDbM; set => new NotImplementedException(); }
     [JsonIgnore]
-    public Guid? SubscriptionId { get; set; }
-    [ForeignKey("SubscriptionId")]
+    public Guid? OrganizationSubscriptionId { get; set; }
+    [ForeignKey("OrganizationSubscriptionId")]
     [JsonIgnore]
-    public SubscriptionDbM? SubscriptionDbM { get; set; }
+    public OrganizationSubscriptionDbM? OrganizationSubscriptionDbM { get; set; }
 
     
     [NotMapped]
