@@ -45,4 +45,10 @@ public class OrganizationDbRepo
         return organization;
     }
 
+    public async Task<IUserOrganization> GetUserOrganizationAsync(Guid organizationId, Guid requestUserId)
+    {
+        var role = await _dbContext.UserOrganizations.Where(x => x.UserId == requestUserId && x.OrganizationId == organizationId).FirstOrDefaultAsync();
+
+        return role;
+    }
 }
