@@ -2,6 +2,7 @@ using DbContext;
 using DbModels;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.DTO;
 
 namespace DbRepos;
 
@@ -20,13 +21,20 @@ public class SubscriptionDbRepo
 
         return sub;
     }
-    public async Task<bool> SaveOrganizationSubscriptionAsync(Guid organizationId, Guid subscriptionPlanId)
+    public async Task<bool> SaveOrganizationSubscriptionAsync(OrganizationSubscriptionUpdate subscription)
     {
-        var existing = await _dbContext.OrganizationSubscriptions.FirstOrDefaultAsync(x => x.OrganizationId == organizationId);
+        var existing = await _dbContext.OrganizationSubscriptions.FirstOrDefaultAsync(x => x.OrganizationId == subscription.OrganizationId); //todo SubscriptionPlanId ska ocksp var unik
 
         if (existing != null)
         {
-            existing.SubscriptionPlanId = subscriptionPlanId;
+            existing.SubscriptionPlanId = subscription.SubscriptionPlanId;
+            existing.StripeCustomerId = subscription.StripeCustomerId;
+            existing.StripeSubscriptionId = subscription.StripeSubscriptionId;
+            existing.Status = subscription.Status;
+            existing.CurrentPeriodStart = subscription.CurrentPeriodStart;
+            existing.CurrentPeriodEnd = subscription.CurrentPeriodEnd;
+            existing.CancelAtPeriodEnd = subscription.CancelAtPeriodEnd;
+            // existing.UpdatedAt = DateTime.UtcNow;
         }
         else
         {
@@ -34,8 +42,16 @@ public class SubscriptionDbRepo
                 new OrganizationSubscriptionDbM
                 {
                     Id = Guid.NewGuid(),
-                    OrganizationId = organizationId,
-                    SubscriptionPlanId = subscriptionPlanId
+                    OrganizationId = subscription.OrganizationId,
+                    SubscriptionPlanId = subscription.SubscriptionPlanId,
+                    StripeCustomerId = subscription.StripeCustomerId,
+                    StripeSubscriptionId = subscription.StripeSubscriptionId,
+                    Status = subscription.Status,
+                    CurrentPeriodStart = subscription.CurrentPeriodStart,
+                    CurrentPeriodEnd = subscription.CurrentPeriodEnd,
+                    CancelAtPeriodEnd = subscription.CancelAtPeriodEnd,
+                    // CreatedAt = DateTime.UtcNow,
+                    // UpdatedAt = DateTime.UtcNow
                 });
         }
 

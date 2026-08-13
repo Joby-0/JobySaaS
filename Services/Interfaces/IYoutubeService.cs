@@ -7,11 +7,11 @@ namespace Services;
 public interface IYoutubeService
 {
     // Task<string> UploadAsync(string filePath, string title, string description, string[] tags);
-    Task<ServiceResult> Callback(string code);
-    Task<ServiceResult> Connect();
+    Task<ServiceResult<string>> Callback(string code);
+    Task<ServiceResult<string>> Connect();
 
-    Task<ServiceResult> UploadVideoAsync(IFormFile video, string title, string description, string categoryId, ISocialAccount account);
+    Task<ServiceResult<string>> UploadVideoAsync(IFormFile video, string title, string description, string categoryId, ISocialAccount account);
 
-    Task<ServiceResult> RefreshTokenAsync(ISocialAccount socialAccount);
-    Task<ServiceResult> GetAccessTokenAsync(ISocialAccount account);
+    Task<ServiceResult<string>> RefreshTokenAsync(ISocialAccount socialAccount);
+    Task<ServiceResult<string>> GetAccessTokenAsync(ISocialAccount account);
 }

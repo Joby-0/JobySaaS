@@ -65,20 +65,7 @@ namespace AppWebApi.Controllers
             return Ok(organization);
         }
 
-        [Authorize]
-        [HttpPost("{organizationId:guid}")]
-        [ActionName("subscription")]
-        public async Task<IActionResult> UpdateSubscription(Guid organizationId, [FromBody] SelectSubscriptionRequest request)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userId, out var requestUserId))
-            {
-                return Unauthorized();
-            }
-                var result = await _organizationService.UpdateSubscriptionAsync(organizationId, request.SubscriptionId, requestUserId);
 
-            return Ok();
-        }
 
         //Todo 
         //GET /organization/{id}/members

@@ -23,6 +23,9 @@ builder.Services.AddJwtTokenService(builder.Configuration);
 builder.Services.AddMainDbContext(builder.Configuration);
 builder.Services.AddEncryptions(builder.Configuration);
 
+builder.Services.AddStripe(builder.Configuration);
+builder.Services.AddScoped<IStripeService, StripeService>();
+
 
 builder.Services.AddScoped<YoutubeDbRepo>();
 builder.Services.AddScoped<IYoutubeService, YoutubeService>();
@@ -30,6 +33,9 @@ builder.Services.AddScoped<AuthDbRepo>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<OrganizationDbRepo>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<SubscriptionDbRepo>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<UserDbRepo>();
 
 builder.Services.AddAuthorization(options =>
 {

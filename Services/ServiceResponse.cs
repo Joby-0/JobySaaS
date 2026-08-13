@@ -1,14 +1,20 @@
 namespace Services;
-public class ServiceResult
+
+public class ServiceResult<T>
 {
     public bool Success { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public string? Error { get; set; }
-    public object? Data { get; set; }
 
-    public static ServiceResult Ok(string message, object? data = null)
+    public string Message { get; set; } = string.Empty;
+
+    public string? Error { get; set; }
+
+    public T? Data { get; set; }
+
+    public static ServiceResult<T> Ok(
+        string message,
+        T? data = default)
     {
-        return new ServiceResult
+        return new ServiceResult<T>
         {
             Success = true,
             Message = message,
@@ -16,9 +22,9 @@ public class ServiceResult
         };
     }
 
-    public static ServiceResult Fail(string error)
+    public static ServiceResult<T> Fail(string error)
     {
-        return new ServiceResult
+        return new ServiceResult<T>
         {
             Success = false,
             Error = error

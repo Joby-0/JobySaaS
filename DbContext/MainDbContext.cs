@@ -10,7 +10,7 @@ public class MainDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<UserDbM> Users { get; set; }
     public DbSet<OrganizationDbM> Organizations { get; set; }
     public DbSet<SubscriptionPlanDbM> SubscriptionPlans { get; set; }
-    public DbSet<OrganizationSubscriptionDbM> OrganizationSubscriptions {get; set;}
+    public DbSet<OrganizationSubscriptionDbM> OrganizationSubscriptions { get; set; }
     public DbSet<UserOrganizationDbM> UserOrganizations { get; set; }
     public DbSet<SocialAccountDbM> SocialAccounts { get; set; }
     public DbSet<PostDbM> Posts { get; set; }
@@ -30,6 +30,7 @@ public class MainDbContext : Microsoft.EntityFrameworkCore.DbContext
             Name = "Free",
             Price = 0,
             StripePriceId = null,
+            BillingIntervalInMonths = 0
         },
         new SubscriptionPlanDbM
         {
@@ -46,14 +47,13 @@ public class MainDbContext : Microsoft.EntityFrameworkCore.DbContext
             Price = 30,
             StripePriceId = "price_1U3MgCBD6lDY7COkr8xmg0Ha",
             BillingIntervalInMonths = 1
-            
         },
         new SubscriptionPlanDbM
         {
-            Id = Guid.Parse("price_1U3N6rBD6lDY7COkO6ixkp2H"),
+            Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
             Name = "Pro Yearly",
             Price = 100,
-            StripePriceId = "prod_V3TYdFVSK3pCoo",
+            StripePriceId = "price_1U3N6rBD6lDY7COkO6ixkp2H",
             BillingIntervalInMonths = 12
         },
         new SubscriptionPlanDbM
