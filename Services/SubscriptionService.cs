@@ -23,7 +23,7 @@ public class SubscriptionService : ISubscriptionService
         {
             return ServiceResult<string>.Fail(""); //todo message
         }
-        //check users role in org
+
         var userOrganization = await _orgRepo.GetUserOrganizationAsync(organizationId, requestUserId);
 
         if (userOrganization == null)
@@ -39,6 +39,9 @@ public class SubscriptionService : ISubscriptionService
         if (subscriptionPlan == null)
         {
             return ServiceResult<string>.Fail("Subscription plan not found.");
+        }else if(subscriptionPlan.StripePriceId == null)
+        {
+            return ServiceResult<string>.Ok("Free Plan selected");
         }
         
         var user = await _userRepo.GetUserAsync(requestUserId);
