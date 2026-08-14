@@ -65,12 +65,14 @@ namespace AppWebApi.Controllers
             return Ok(organization);
         }
 
-
+        public async Task<IActionResult> InviteUser()
+        {
+            return BadRequest();
+        }
 
         //Todo 
         //GET /organization/{id}/members
         //GET /organization/{id}/social-accounts
-        //GET /organization/{id}/subscription
         //GET /organization/{id}/posts
         //GET /organization/{id}/analytics
     }
