@@ -16,6 +16,6 @@ public class OrganizationSubscriptionUpdate
     public string StripeSubscriptionId { get; set; }
     public string Status { get; set; }
     public DateTime CurrentPeriodStart { get; set; }
-    public DateTime CurrentPeriodEnd { get; set; }
+    public DateTime? CurrentPeriodEnd { get; set; }
     public bool CancelAtPeriodEnd { get; set; }
 }

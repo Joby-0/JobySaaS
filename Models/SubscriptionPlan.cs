@@ -7,4 +7,5 @@ public class SubscriptionPlan : ISubscriptionPlan
     public string StripePriceId { get; set; }
     public int Price { get; set; }
     public int BillingIntervalInMonths { get; set; }
+    public bool isFree {get; set;}
 }

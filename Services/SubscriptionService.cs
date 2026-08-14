@@ -1,4 +1,5 @@
 using DbRepos;
+using Models.DTO;
 
 namespace Services;
 
@@ -39,15 +40,33 @@ public class SubscriptionService : ISubscriptionService
         if (subscriptionPlan == null)
         {
             return ServiceResult<string>.Fail("Subscription plan not found.");
-        }else if(subscriptionPlan.StripePriceId == null)
-        {
-            return ServiceResult<string>.Ok("Free Plan selected");
         }
-        
-        var user = await _userRepo.GetUserAsync(requestUserId);
+        if (!subscriptionPlan.isFree)
+        {
+            var user = await _userRepo.GetUserAsync(requestUserId);
+            if(user is null || user.Email is null) return ServiceResult<string>.Fail("User not found or user have no email");
 
-        var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(subscriptionPlan.StripePriceId, user.Email, organizationId);
+            var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(subscriptionPlan.StripePriceId, user.Email, organizationId);
 
-        return ServiceResult<string>.Ok("Checkout session created.", checkoutUrl);
+            return ServiceResult<string>.Ok("Checkout session created.", checkoutUrl);
+        }
+        else
+        {
+            var subscription = new OrganizationSubscriptionUpdate
+            {
+                OrganizationId = organizationId,
+                SubscriptionPlanId = subscriptionPlanId,
+                CancelAtPeriodEnd = false,
+                CurrentPeriodStart = DateTime.UtcNow,
+                CurrentPeriodEnd = null,
+                Status = "active",
+                StripeCustomerId = null,
+                StripeSubscriptionId = null
+
+            };
+            var save = await _repo.SaveOrganizationSubscriptionAsync(subscription);
+            if (!save) return ServiceResult<string>.Fail("Something went wrong saving free plan");
+            return ServiceResult<string>.Ok("Free Plan successful selected");
+        }
     }
 }
