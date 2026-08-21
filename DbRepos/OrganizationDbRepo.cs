@@ -43,7 +43,6 @@ public class OrganizationDbRepo
             throw new Exception($"Failed to create organization: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
-
     public async Task<IUserOrganization> GetUserOrganizationAsync(Guid organizationId, Guid requestUserId)
     {
         var role = await _dbContext.UserOrganizations.Where(x => x.UserId == requestUserId && x.OrganizationId == organizationId).FirstOrDefaultAsync();

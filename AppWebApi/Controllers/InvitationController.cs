@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Models.DTO;
 using Services;
 
 namespace AppWebApi.Controllers;
@@ -32,6 +33,22 @@ public class InvitationController : ControllerBase
         }
 
         var result = await _service.CreateInviteCodeAsync(organizationId, requestUserId, expireInMinutes);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpGet]
+    [ActionName("createinvitecode")]
+    [ProducesResponseType(200, Type = typeof(ServiceResult<InvitationPreviewDto>))]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> GetInviteInfo([FromQuery] string code)
+    {
+        var result = await _service.GetInviteAsync(code);
 
         if (!result.Success)
         {

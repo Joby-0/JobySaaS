@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using DbModels;
 using DbRepos;
+using Models.DTO;
 
 namespace Services;
 
@@ -8,9 +9,10 @@ public class InvitationService : IInvitationService
 {
     readonly InvitationDbRepo _repo;
     readonly OrganizationDbRepo _orgRepo;
-    public InvitationService(InvitationDbRepo organizationDbRepo)
+    public InvitationService(InvitationDbRepo repo, OrganizationDbRepo orgRepo)
     {
-        _repo = organizationDbRepo;
+        _repo = repo;
+        _orgRepo = orgRepo;
     }
     public async Task<ServiceResult<string>> CreateInviteCodeAsync(Guid organizationId, Guid requestUserId, int expireInMinutes)
     {
@@ -45,12 +47,55 @@ public class InvitationService : IInvitationService
             CreatedAt = now,
             ExpiresAt = now.AddMinutes(expireInMinutes),
             AcceptedAt = null,
-            IsAvtice = true
+            IsActive = true
         };
 
         await _repo.CreateInviteCodeAsync(inviteCode);
 
         return ServiceResult<string>.Ok("Invite code created successfully.", code);
+    }
+
+    public async Task<ServiceResult<InvitationPreviewDto>> GetInviteAsync(string inviteCode)
+    {
+        var code = await _repo.GetInviteAsync(inviteCode);
+
+        if (code == null)
+        {
+            return new ServiceResult<InvitationPreviewDto>
+            {
+                Success = false,
+                Error = "The invitation code was not found."
+            };
+        }
+
+        if (!code.IsActive)
+        {
+            return new ServiceResult<InvitationPreviewDto>
+            {
+                Success = false,
+                Error = "This invitation code is no longer active."
+            };
+        }
+
+        if (code.ExpiresAt <= DateTime.UtcNow)
+        {
+            return new ServiceResult<InvitationPreviewDto>
+            {
+                Success = false,
+                Error = "This invitation code has expired. Please ask the organization administrator for a new invitation."
+            };
+        }
+
+        return new ServiceResult<InvitationPreviewDto>
+        {
+            Success = true,
+            Data = new InvitationPreviewDto
+            {
+                Organization = code.OrganizationDbM.Name,
+                InvitedBy = code.UserDbM.UserName,
+                ExpireAt = code.ExpiresAt
+            }
+        };
     }
 
     private string GenerateInviteCode()
@@ -72,6 +117,5 @@ public class InvitationService : IInvitationService
 
 
     //todo
-    //GET /api/invitation/{code}
     //POST /api/invitation/{code}/accept
 }

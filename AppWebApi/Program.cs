@@ -36,6 +36,8 @@ builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<SubscriptionDbRepo>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<UserDbRepo>();
+builder.Services.AddScoped<InvitationDbRepo>();
+builder.Services.AddScoped<IInvitationService, InvitationService>();
 
 builder.Services.AddAuthorization(options =>
 {

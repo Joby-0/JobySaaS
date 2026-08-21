@@ -112,7 +112,7 @@ namespace DbContext.Migrations
                     b.Property<string>("InvitedEmail")
                         .HasColumnType("longtext");
 
-                    b.Property<bool>("IsAvtice")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("OrganizationId")
@@ -125,6 +125,10 @@ namespace DbContext.Migrations
 
                     b.HasIndex("InviteCode")
                         .IsUnique();
+
+                    b.HasIndex("InvitedByUserId");
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("OrganizationInvitations");
                 });
@@ -428,6 +432,25 @@ namespace DbContext.Migrations
                         .HasForeignKey("OrganizationSubscriptionId");
 
                     b.Navigation("OrganizationSubscriptionDbM");
+                });
+
+            modelBuilder.Entity("DbModels.OrganizationInvitationDbM", b =>
+                {
+                    b.HasOne("DbModels.UserDbM", "UserDbM")
+                        .WithMany()
+                        .HasForeignKey("InvitedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DbModels.OrganizationDbM", "OrganizationDbM")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OrganizationDbM");
+
+                    b.Navigation("UserDbM");
                 });
 
             modelBuilder.Entity("DbModels.OrganizationSubscriptionDbM", b =>
