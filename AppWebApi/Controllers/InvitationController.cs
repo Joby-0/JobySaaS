@@ -43,7 +43,7 @@ public class InvitationController : ControllerBase
     }
 
     [HttpGet]
-    [ActionName("createinvitecode")]
+    [ActionName("preview")]
     [ProducesResponseType(200, Type = typeof(ServiceResult<InvitationPreviewDto>))]
     [ProducesResponseType(400)]
     public async Task<IActionResult> GetInviteInfo([FromQuery] string code)
