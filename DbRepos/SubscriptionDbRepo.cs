@@ -32,7 +32,7 @@ public class SubscriptionDbRepo
             existing.StripeSubscriptionId = subscription.StripeSubscriptionId;
             existing.Status = subscription.Status;
             existing.CurrentPeriodStart = subscription.CurrentPeriodStart;
-            existing.CurrentPeriodEnd = subscription.CurrentPeriodEnd;
+            existing.CurrentPeriodEnd = subscription.CurrentPeriodEnd.Value;
             existing.CancelAtPeriodEnd = subscription.CancelAtPeriodEnd;
             // existing.UpdatedAt = DateTime.UtcNow;
         }
@@ -48,7 +48,7 @@ public class SubscriptionDbRepo
                     StripeSubscriptionId = subscription.StripeSubscriptionId,
                     Status = subscription.Status,
                     CurrentPeriodStart = subscription.CurrentPeriodStart,
-                    CurrentPeriodEnd = subscription.CurrentPeriodEnd,
+                    CurrentPeriodEnd = subscription.CurrentPeriodEnd.Value,
                     CancelAtPeriodEnd = subscription.CancelAtPeriodEnd,
                     // CreatedAt = DateTime.UtcNow,
                     // UpdatedAt = DateTime.UtcNow

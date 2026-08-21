@@ -16,12 +16,17 @@ public class MainDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<PostDbM> Posts { get; set; }
     public DbSet<MediaDbM> Media { get; set; }
     public DbSet<PostAnalyticsDbM> PostAnalytics { get; set; }
+    public DbSet<OrganizationInvitationDbM> OrganizationInvitations { get; set; }
 
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<OrganizationInvitationDbM>()
+            .HasIndex(x => x.InviteCode)
+            .IsUnique();
 
         modelBuilder.Entity<SubscriptionPlanDbM>().HasData(
         new SubscriptionPlanDbM
