@@ -70,4 +70,8 @@ public class InvitationService : IInvitationService
     }
 
 
+
+    //todo
+    //GET /api/invitation/{code}
+    //POST /api/invitation/{code}/accept
 }
