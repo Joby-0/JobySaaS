@@ -1,11 +1,12 @@
 using DbContext;
 using DbModels;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Models;
 
 namespace DbRepos;
 
-public class OrganizationDbRepo 
+public class OrganizationDbRepo
 {
     readonly MainDbContext _dbContext;
 
@@ -14,6 +15,13 @@ public class OrganizationDbRepo
         _dbContext = dbContext;
     }
 
+    public async Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId)
+    {
+        var organization = await _dbContext.Organizations.AsNoTracking().FirstOrDefaultAsync(o => o.Id == organizationId &&
+        _dbContext.UserOrganizations.Any(uo => uo.OrganizationId == o.Id && uo.UserId == requestUserId));
+
+        return organization;
+    }
     public async Task<IOrganization> CreateOrganizationAsync(OrganizationDbM organization)
     {
         try
@@ -34,15 +42,6 @@ public class OrganizationDbRepo
             Console.WriteLine(ex.ToString());
             throw new Exception($"Failed to create organization: {ex.InnerException?.Message ?? ex.Message}");
         }
-    }
-    public async Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId)
-    {
-            var organization = await _dbContext.Organizations.AsNoTracking().FirstOrDefaultAsync(o =>o.Id == organizationId &&
-            _dbContext.UserOrganizations.Any(uo =>
-                uo.OrganizationId == o.Id &&
-                uo.UserId == requestUserId));
-
-        return organization;
     }
 
     public async Task<IUserOrganization> GetUserOrganizationAsync(Guid organizationId, Guid requestUserId)

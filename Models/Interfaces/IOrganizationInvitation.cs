@@ -7,6 +7,7 @@ public interface IOrganizationInvitation
     string Role {get; set;}
     string InviteCode {get; set;}
     DateTime ExpiresAt {get; set;}
+    bool IsAvtice {get; set;}
     DateTime? AcceptedAt {get; set;}
     DateTime CreatedAt {get; set;}
     Guid InvitedByUserId {get; set;}

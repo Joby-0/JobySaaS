@@ -65,16 +65,6 @@ namespace AppWebApi.Controllers
             return Ok(organization);
         }
 
-        
-        [Authorize]
-        [HttpPost("{organizationId:guid}")]
-        [ActionName("createinvitecode")]
-        [ProducesResponseType(200, Type = typeof(IOrganization))]
-        [ProducesResponseType(400, Type = typeof(string))]
-        public async Task<IActionResult> CreateInviteCode(Guid organizationId)
-        {
-            return BadRequest();
-        }
 
         //Todo 
         //GET /organization/{id}/members

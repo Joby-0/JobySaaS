@@ -88,6 +88,47 @@ namespace DbContext.Migrations
                     b.ToTable("Organizations");
                 });
 
+            modelBuilder.Entity("DbModels.OrganizationInvitationDbM", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("InviteCode")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<Guid>("InvitedByUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("InvitedEmail")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsAvtice")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Role")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InviteCode")
+                        .IsUnique();
+
+                    b.ToTable("OrganizationInvitations");
+                });
+
             modelBuilder.Entity("DbModels.OrganizationSubscriptionDbM", b =>
                 {
                     b.Property<Guid>("Id")
@@ -247,6 +288,9 @@ namespace DbContext.Migrations
                     b.Property<string>("StripePriceId")
                         .HasColumnType("longtext");
 
+                    b.Property<bool>("isFree")
+                        .HasColumnType("tinyint(1)");
+
                     b.HasKey("Id");
 
                     b.ToTable("SubscriptionPlans");
@@ -257,7 +301,8 @@ namespace DbContext.Migrations
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             BillingIntervalInMonths = 0,
                             Name = "Free",
-                            Price = 0
+                            Price = 0,
+                            isFree = false
                         },
                         new
                         {
@@ -265,7 +310,8 @@ namespace DbContext.Migrations
                             BillingIntervalInMonths = 1,
                             Name = "Pro Monthly",
                             Price = 10,
-                            StripePriceId = "price_1U3MahBD6lDY7COkvKIK29cg"
+                            StripePriceId = "price_1U3MahBD6lDY7COkvKIK29cg",
+                            isFree = false
                         },
                         new
                         {
@@ -273,7 +319,8 @@ namespace DbContext.Migrations
                             BillingIntervalInMonths = 1,
                             Name = "Business Monthly",
                             Price = 30,
-                            StripePriceId = "price_1U3MgCBD6lDY7COkr8xmg0Ha"
+                            StripePriceId = "price_1U3MgCBD6lDY7COkr8xmg0Ha",
+                            isFree = false
                         },
                         new
                         {
@@ -281,7 +328,8 @@ namespace DbContext.Migrations
                             BillingIntervalInMonths = 12,
                             Name = "Pro Yearly",
                             Price = 100,
-                            StripePriceId = "price_1U3N6rBD6lDY7COkO6ixkp2H"
+                            StripePriceId = "price_1U3N6rBD6lDY7COkO6ixkp2H",
+                            isFree = false
                         },
                         new
                         {
@@ -289,7 +337,8 @@ namespace DbContext.Migrations
                             BillingIntervalInMonths = 12,
                             Name = "Business Yearly",
                             Price = 300,
-                            StripePriceId = "price_1U3N6BBD6lDY7COkF4N9qk3K"
+                            StripePriceId = "price_1U3N6BBD6lDY7COkF4N9qk3K",
+                            isFree = false
                         });
                 });
 

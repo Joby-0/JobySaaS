@@ -17,6 +17,30 @@ namespace DbContext.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "OrganizationInvitations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    InvitedByUserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    OrganizationId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    InvitedEmail = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Role = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    InviteCode = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    AcceptedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    IsAvtice = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrganizationInvitations", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "SubscriptionPlans",
                 columns: table => new
                 {
@@ -26,7 +50,8 @@ namespace DbContext.Migrations
                     StripePriceId = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Price = table.Column<int>(type: "int", nullable: false),
-                    BillingIntervalInMonths = table.Column<int>(type: "int", nullable: false)
+                    BillingIntervalInMonths = table.Column<int>(type: "int", nullable: false),
+                    isFree = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -258,20 +283,26 @@ namespace DbContext.Migrations
 
             migrationBuilder.InsertData(
                 table: "SubscriptionPlans",
-                columns: new[] { "Id", "BillingIntervalInMonths", "Name", "Price", "StripePriceId" },
+                columns: new[] { "Id", "BillingIntervalInMonths", "Name", "Price", "StripePriceId", "isFree" },
                 values: new object[,]
                 {
-                    { new Guid("11111111-1111-1111-1111-111111111111"), 0, "Free", 0, null },
-                    { new Guid("22222222-2222-2222-2222-222222222222"), 1, "Pro Monthly", 10, "price_1U3MahBD6lDY7COkvKIK29cg" },
-                    { new Guid("33333333-3333-3333-3333-333333333333"), 1, "Business Monthly", 30, "price_1U3MgCBD6lDY7COkr8xmg0Ha" },
-                    { new Guid("44444444-4444-4444-4444-444444444444"), 12, "Pro Yearly", 100, "price_1U3N6rBD6lDY7COkO6ixkp2H" },
-                    { new Guid("55555555-5555-5555-5555-555555555555"), 12, "Business Yearly", 300, "price_1U3N6BBD6lDY7COkF4N9qk3K" }
+                    { new Guid("11111111-1111-1111-1111-111111111111"), 0, "Free", 0, null, false },
+                    { new Guid("22222222-2222-2222-2222-222222222222"), 1, "Pro Monthly", 10, "price_1U3MahBD6lDY7COkvKIK29cg", false },
+                    { new Guid("33333333-3333-3333-3333-333333333333"), 1, "Business Monthly", 30, "price_1U3MgCBD6lDY7COkr8xmg0Ha", false },
+                    { new Guid("44444444-4444-4444-4444-444444444444"), 12, "Pro Yearly", 100, "price_1U3N6rBD6lDY7COkO6ixkp2H", false },
+                    { new Guid("55555555-5555-5555-5555-555555555555"), 12, "Business Yearly", 300, "price_1U3N6BBD6lDY7COkF4N9qk3K", false }
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Media_OrganizationId",
                 table: "Media",
                 column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrganizationInvitations_InviteCode",
+                table: "OrganizationInvitations",
+                column: "InviteCode",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Organizations_OrganizationSubscriptionId",
@@ -345,6 +376,9 @@ namespace DbContext.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_OrganizationSubscriptions_Organizations_OrganizationId",
                 table: "OrganizationSubscriptions");
+
+            migrationBuilder.DropTable(
+                name: "OrganizationInvitations");
 
             migrationBuilder.DropTable(
                 name: "PostAnalytics");

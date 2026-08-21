@@ -11,4 +11,5 @@ public class OrganizationInvitation : IOrganizationInvitation
     public DateTime? AcceptedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public virtual Guid InvitedByUserId { get; set; }
+    public bool IsAvtice { get; set; }
 }
