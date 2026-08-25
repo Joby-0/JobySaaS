@@ -8,6 +8,8 @@ public class SubscriptionPlan : ISubscriptionPlan
     public int Price { get; set; }
     public int BillingIntervalInMonths { get; set; }
     public bool isFree { get; set; }
+    public bool ContactSales { get; set; }
+    public bool IsActive { get; set; }
     public string Description { get; set; }
     public virtual List<IFeature> Features { get; set; }
 }

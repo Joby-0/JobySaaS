@@ -13,11 +13,15 @@ public static class DbContextExtensions
 {
     public static IServiceCollection AddMainDbContext(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString =configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
 
+        // services.AddDbContext<MainDbContext>(options =>
+        // {
+        //     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        // });
         services.AddDbContext<MainDbContext>(options =>
         {
-            options.UseMySql(connectionString,ServerVersion.AutoDetect(connectionString));
+            options.UseSqlite(connectionString);
         });
 
         return services;
