@@ -17,13 +17,13 @@ public class SubscriptionDbRepo
 
     public async Task<ISubscriptionPlan> GetSubscriptionPlanByIdAsync(Guid subscriptionId)
     {
-        var sub = await _dbContext.SubscriptionPlans.Where(x => x.Id == subscriptionId).FirstOrDefaultAsync();
+        var sub = await _dbContext.SubscriptionPlans.AsNoTracking().Where(x => x.Id == subscriptionId).FirstOrDefaultAsync();
 
         return sub;
     }
     public async Task<bool> SaveOrganizationSubscriptionAsync(OrganizationSubscriptionUpdate subscription)
     {
-        var existing = await _dbContext.OrganizationSubscriptions.FirstOrDefaultAsync(x => x.OrganizationId == subscription.OrganizationId); //todo SubscriptionPlanId ska ocksp var unik
+        var existing = await _dbContext.OrganizationSubscriptions.AsNoTracking().FirstOrDefaultAsync(x => x.OrganizationId == subscription.OrganizationId); //todo SubscriptionPlanId ska ocksp var unik
 
         if (existing != null)
         {
@@ -58,5 +58,21 @@ public class SubscriptionDbRepo
         await _dbContext.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<List<SubscriptionDto>> GetSubscriptionsAsync()
+    {
+        var sub = await _dbContext.SubscriptionPlans.AsNoTracking().Select(x => new SubscriptionDto
+        {
+            Id = x.Id,
+            Name = x.Name,
+            Price = x.Price,
+            BillingIntervalInMonths = x.BillingIntervalInMonths,
+            Description = x.Description,
+            Features = x.FeatureDbMs.Select(x => x.Name).ToList()
+        })
+        .ToListAsync();
+
+        return sub;
     }
 }

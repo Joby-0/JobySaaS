@@ -44,7 +44,7 @@ public class SubscriptionService : ISubscriptionService
         if (!subscriptionPlan.isFree)
         {
             var user = await _userRepo.GetUserAsync(requestUserId);
-            if(user is null || user.Email is null) return ServiceResult<string>.Fail("User not found or user have no email");
+            if (user is null || user.Email is null) return ServiceResult<string>.Fail("User not found or user have no email");
 
             var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(subscriptionPlan.StripePriceId, user.Email, organizationId);
 
@@ -68,5 +68,15 @@ public class SubscriptionService : ISubscriptionService
             if (!save) return ServiceResult<string>.Fail("Something went wrong saving free plan");
             return ServiceResult<string>.Ok("Free Plan successful selected");
         }
+    }
+
+    public async Task<ServiceResult<List<SubscriptionDto>>> GetSubscriptionsAsync()
+    {
+        var subs = await _repo.GetSubscriptionsAsync();
+        if (subs == null)
+        {
+            return ServiceResult<List<SubscriptionDto>>.Fail("Could not retrieve subscription plans.");
+        }
+        return ServiceResult<List<SubscriptionDto>>.Ok("Subscriptions retrieved successfully.", subs);
     }
 }

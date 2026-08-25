@@ -8,6 +8,17 @@ public class SelectSubscriptionRequest
 {
     public Guid SubscriptionId { get; set; }
 }
+public class SubscriptionDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public int Price { get; set; }
+    public string StripePriceId { get; set; }
+    public int BillingIntervalInMonths { get; set; }
+    public string Description {get; set;}
+    public List<string> Features {get; set;}
+}
+
 public class OrganizationSubscriptionUpdate
 {
     public Guid OrganizationId { get; set; }

@@ -49,4 +49,11 @@ public class OrganizationDbRepo
 
         return role;
     }
+
+    public async Task AddUserToOrganization(UserOrganizationDbM user)
+    {
+        _dbContext.UserOrganizations.Add(user);
+
+        await _dbContext.SaveChangesAsync();
+    }
 }

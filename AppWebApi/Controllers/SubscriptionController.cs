@@ -34,4 +34,13 @@ public class SubscriptionController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet]
+    [ActionName("plans")]
+    public async Task<IActionResult> GetSubscriptions()
+    {
+        var result = await _service.GetSubscriptionsAsync();
+
+        return Ok(result);
+    }
+
 }
