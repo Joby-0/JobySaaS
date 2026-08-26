@@ -17,7 +17,7 @@ public class AuthDbRepo
         _dbContext = dbContext;
     }
 
-    public async Task<UserDbM?> GetByUsernameOrEmailAsync(string username, string email) => await _dbContext.Users.FirstOrDefaultAsync(x => x.UserName == username || x.Email == email);
+    public async Task<UserDbM?> GetByUsernameOrEmailAsync(string username) => await _dbContext.Users.FirstOrDefaultAsync(x => x.UserName == username);
     public async Task RegisterUserAsync(UserDbM request)
     {
         try

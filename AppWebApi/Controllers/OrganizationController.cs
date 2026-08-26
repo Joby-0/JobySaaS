@@ -34,12 +34,14 @@ namespace AppWebApi.Controllers
         public async Task<IActionResult> CreateOrganization([FromBody] CreateOrganizationRequest request)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = User.FindFirst("UserName")?.Value;
+            var email = User.FindFirst("Email")?.Value;
 
-            if (!Guid.TryParse(userId, out var ownerId))
+            if (!Guid.TryParse(userId, out var ownerId) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(email))
             {
                 return Unauthorized();
             }
-            var result = await _organizationService.CreateOrganizationAsync(request, ownerId);
+            var result = await _organizationService.CreateOrganizationAsync(request, ownerId, userName, email);
             return CreatedAtAction(nameof(GetOrganization), new { organizationId = result.Id }, result);
         }
 

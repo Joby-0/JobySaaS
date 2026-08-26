@@ -9,12 +9,15 @@ namespace Services;
 public class OrganizationService : IOrganizationService
 {
     readonly OrganizationDbRepo _repo;
-    public OrganizationService(OrganizationDbRepo organizationDbRepo)
+    readonly UserDbRepo _userRepo;
+    public OrganizationService(OrganizationDbRepo organizationDbRepo, UserDbRepo userDbRepo)
     {
         _repo = organizationDbRepo;
+        _userRepo = userDbRepo;
     }
-    public async Task<IOrganization> CreateOrganizationAsync(CreateOrganizationRequest request, Guid ownerId)
+    public async Task<IOrganization> CreateOrganizationAsync(CreateOrganizationRequest request, Guid ownerId, string ownerUserName, string email)
     {
+        await _userRepo.EnsureUserExistsAsync(ownerId, ownerUserName,email);
 
         var organization = new OrganizationDbM
         {
@@ -26,7 +29,7 @@ public class OrganizationService : IOrganizationService
         var save = await _repo.CreateOrganizationAsync(organization);
 
 
-        return organization;
+        return save;
     }
 
     public Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId) => _repo.GetOrganizationByIdAsync(organizationId, requestUserId);

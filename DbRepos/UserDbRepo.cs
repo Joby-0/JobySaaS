@@ -20,4 +20,21 @@ public class UserDbRepo
 
         return user;
     }
+    public async Task<UserDbM> EnsureUserExistsAsync(Guid userId, string userName, string email)
+    {
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user is not null) return user;
+
+        user = new UserDbM
+        {
+            Id = userId,
+            UserName = userName,
+            Email = email,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.Users.Add(user);
+        await _dbContext.SaveChangesAsync();
+        return user;
+    }
 }

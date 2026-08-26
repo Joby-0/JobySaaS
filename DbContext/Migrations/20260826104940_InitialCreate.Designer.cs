@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DbContext.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20260825124758_InitialCreate")]
+    [Migration("20260826104940_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -508,7 +508,7 @@ namespace DbContext.Migrations
                             IsActive = true,
                             Name = "Basic",
                             Price = 10,
-                            StripePriceId = "YOUR_BASIC_MONTHLY_PRICE_ID",
+                            StripePriceId = "price_1U8eLiBD6lDY7COkLzS0Q7Vx",
                             isFree = false
                         },
                         new
@@ -519,7 +519,7 @@ namespace DbContext.Migrations
                             IsActive = true,
                             Name = "Pro",
                             Price = 25,
-                            StripePriceId = "YOUR_PRO_MONTHLY_PRICE_ID",
+                            StripePriceId = "price_1U3MahBD6lDY7COkvKIK29cg",
                             isFree = false
                         },
                         new
@@ -540,7 +540,7 @@ namespace DbContext.Migrations
                             IsActive = true,
                             Name = "Basic",
                             Price = 100,
-                            StripePriceId = "YOUR_BASIC_YEARLY_PRICE_ID",
+                            StripePriceId = "price_1U8eMABD6lDY7COkoje7yEBw",
                             isFree = false
                         },
                         new
@@ -551,7 +551,7 @@ namespace DbContext.Migrations
                             IsActive = true,
                             Name = "Pro",
                             Price = 250,
-                            StripePriceId = "YOUR_PRO_YEARLY_PRICE_ID",
+                            StripePriceId = "price_1U3N6rBD6lDY7COkO6ixkp2H",
                             isFree = false
                         });
                 });
@@ -562,31 +562,10 @@ namespace DbContext.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Created_at")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ProfileImage")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("Updated_at")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")

@@ -38,15 +38,8 @@ namespace DbContext.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     UserName = table.Column<string>(type: "TEXT", nullable: true),
-                    ProfileImage = table.Column<string>(type: "TEXT", nullable: true),
-                    FirstName = table.Column<string>(type: "TEXT", nullable: true),
-                    LastName = table.Column<string>(type: "TEXT", nullable: true),
                     Email = table.Column<string>(type: "TEXT", nullable: true),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
-                    Role = table.Column<int>(type: "INTEGER", nullable: false),
-                    Created_at = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Updated_at = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -276,11 +269,11 @@ namespace DbContext.Migrations
                 values: new object[,]
                 {
                     { new Guid("11111111-1111-1111-1111-111111111111"), 1, false, null, true, "Free", 0, null, true },
-                    { new Guid("22222222-2222-2222-2222-222222222222"), 1, false, null, true, "Basic", 10, "YOUR_BASIC_MONTHLY_PRICE_ID", false },
-                    { new Guid("33333333-3333-3333-3333-333333333333"), 1, false, null, true, "Pro", 25, "YOUR_PRO_MONTHLY_PRICE_ID", false },
+                    { new Guid("22222222-2222-2222-2222-222222222222"), 1, false, null, true, "Basic", 10, "price_1U8eLiBD6lDY7COkLzS0Q7Vx", false },
+                    { new Guid("33333333-3333-3333-3333-333333333333"), 1, false, null, true, "Pro", 25, "price_1U3MahBD6lDY7COkvKIK29cg", false },
                     { new Guid("44444444-4444-4444-4444-444444444444"), 1, true, null, true, "Enterprise", 0, null, false },
-                    { new Guid("55555555-5555-5555-5555-555555555555"), 12, false, null, true, "Basic", 100, "YOUR_BASIC_YEARLY_PRICE_ID", false },
-                    { new Guid("66666666-6666-6666-6666-666666666666"), 12, false, null, true, "Pro", 250, "YOUR_PRO_YEARLY_PRICE_ID", false }
+                    { new Guid("55555555-5555-5555-5555-555555555555"), 12, false, null, true, "Basic", 100, "price_1U8eMABD6lDY7COkoje7yEBw", false },
+                    { new Guid("66666666-6666-6666-6666-666666666666"), 12, false, null, true, "Pro", 250, "price_1U3N6rBD6lDY7COkO6ixkp2H", false }
                 });
 
             migrationBuilder.InsertData(

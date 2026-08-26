@@ -28,6 +28,7 @@ public class JWTService
             new Claim("UserId", usrSession.UserId.ToString()),
             new Claim("UserRole", usrSession.UserRole.ToString()),
             new Claim("UserName", usrSession.UserName),
+            // new Claim("Email", usrSession.Email),
 
             //used by Microsoft.AspNetCore.Authentication and used in the HTTP request pipeline
             new Claim(JwtRegisteredClaimNames.Jti, TokenId.ToString()),
