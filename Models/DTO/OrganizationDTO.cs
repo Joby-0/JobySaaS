@@ -18,6 +18,11 @@ public class SubscriptionDto
     public string Description {get; set;}
     public List<string> Features {get; set;}
 }
+public class OrganizationSubscriptionStatusDto
+{
+    public bool IsActive { get; set; }
+    public string PlanName { get; set; }
+}
 
 public class OrganizationSubscriptionUpdate
 {

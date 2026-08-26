@@ -42,5 +42,20 @@ public class SubscriptionController : ControllerBase
 
         return Ok(result);
     }
+    [Authorize]
+    [HttpGet("{organizationId:guid}")]
+    [ActionName("status")]
+    [ProducesResponseType(200, Type = typeof(ServiceResult<OrganizationSubscriptionStatusDto>))]
+    public async Task<IActionResult> GetSubscriptionStatus(Guid organizationId)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _service.GetSubscriptionStatusAsync(organizationId, requestUserId);
+        return Ok(result);
+    }
 
 }

@@ -29,22 +29,13 @@ public class StripeService : IStripeService
         var options = new SessionCreateOptions
         {
             Mode = "subscription",
-
             CustomerEmail = customerEmail,
-
             LineItems = new List<SessionLineItemOptions>
-            {
-                new SessionLineItemOptions
-                {
-                    Price = stripePriceId,
-                    Quantity = 1
-                }
-            },
-
-            SuccessUrl = "https://localhost:7249/payment/success?session_id={CHECKOUT_SESSION_ID}",
-
-            CancelUrl = "https://localhost:7249/payment/cancel",
-
+        {
+            new SessionLineItemOptions { Price = stripePriceId, Quantity = 1 }
+        },
+            SuccessUrl = $"{_options.FrontendBaseUrl}/onboarding/complete?organizationId={organizationId}&session_id={{CHECKOUT_SESSION_ID}}",
+            CancelUrl = $"{_options.FrontendBaseUrl}/onboarding/plan",
             Metadata = new Dictionary<string, string>
             {
                 ["OrganizationId"] = organizationId.ToString()
@@ -52,9 +43,7 @@ public class StripeService : IStripeService
         };
 
         var service = new SessionService();
-
         var session = await service.CreateAsync(options);
-
         return session.Url;
     }
 
@@ -126,17 +115,27 @@ public class StripeService : IStripeService
 
                     var stripeSubscriptionId = session.SubscriptionId;
 
+                    var subscriptionService = new Stripe.SubscriptionService();
+                    var stripeSubscription = await subscriptionService.GetAsync(session.SubscriptionId);
+
+
                     _logger.LogInformation("Checkout completed for organization {OrganizationId}. Stripe subscription: {SubscriptionId}", organizationId, stripeSubscriptionId);
 
                     // Database handling comes next.
-                    var subscription = new OrganizationSubscriptionUpdate
+                    var subscriptionUpdate = new OrganizationSubscriptionUpdate
                     {
-                        StripeCustomerId = stripeCustomerId,
-                        StripeSubscriptionId = stripeSubscriptionId,
                         OrganizationId = organizationId,
-
+                        StripeCustomerId = session.CustomerId,
+                        StripeSubscriptionId = session.SubscriptionId,
+                        Status = stripeSubscription.Status, // "active", "trialing", "past_due", etc. — Stripe's own strings
+                        CurrentPeriodStart = stripeSubscription.StartDate,
+                        CurrentPeriodEnd = stripeSubscription.EndedAt,
+                        CancelAtPeriodEnd = stripeSubscription.CancelAtPeriodEnd
+                        // SubscriptionPlanId — you'll need to map this from your own SubscriptionPlans table,
+                        // e.g. by matching stripePriceId back to a plan, since Stripe doesn't know your internal Guid
                     };
-                    await _subscriptionDbRepo.SaveOrganizationSubscriptionAsync(subscription);
+
+                    await _subscriptionDbRepo.SaveOrganizationSubscriptionAsync(subscriptionUpdate);
 
                     break;
                 }

@@ -75,4 +75,12 @@ public class SubscriptionDbRepo
 
         return sub;
     }
+
+    public async Task<OrganizationSubscriptionDbM?> GetOrganizationSubscriptionAsync(Guid organizationId)
+    {
+        return await _dbContext.OrganizationSubscriptions
+            .AsNoTracking()
+            .Include(x => x.SubscriptionPlan)
+            .FirstOrDefaultAsync(x => x.OrganizationId == organizationId);
+    }
 }

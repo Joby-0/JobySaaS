@@ -79,4 +79,49 @@ public class SubscriptionService : ISubscriptionService
         }
         return ServiceResult<List<SubscriptionDto>>.Ok("Subscriptions retrieved successfully.", subs);
     }
+
+    public async Task<ServiceResult<OrganizationSubscriptionStatusDto>> GetSubscriptionStatusAsync(Guid organizationId, Guid requestUserId)
+    {
+        // 1. Verify the caller actually belongs to this org — same check CreateSubscriptionCheckoutAsync should already be doing
+        var userOrganization = await _orgRepo.GetUserOrganizationAsync(organizationId, requestUserId);
+        if (userOrganization == null)
+        {
+            return new ServiceResult<OrganizationSubscriptionStatusDto>
+            {
+                Success = false,
+                Message = "You do not have access to this organization."
+            };
+        }
+        if (userOrganization.Role != "Owner" && userOrganization.Role != "Admin")
+        {
+            return new ServiceResult<OrganizationSubscriptionStatusDto>
+            {
+                Success = false,
+                Message = "You do not have access to this organization."
+            };
+        }
+
+
+        // 2. Look up the org's subscription row
+        var subscription = await _repo.GetOrganizationSubscriptionAsync(organizationId);
+
+        if (subscription is null || string.IsNullOrEmpty(subscription.StripeSubscriptionId))
+        {
+            return new ServiceResult<OrganizationSubscriptionStatusDto>
+            {
+                Success = true,
+                Data = new OrganizationSubscriptionStatusDto { IsActive = false }
+            };
+        }
+
+        return new ServiceResult<OrganizationSubscriptionStatusDto>
+        {
+            Success = true,
+            Data = new OrganizationSubscriptionStatusDto
+            {
+                IsActive = true,
+                PlanName = subscription.SubscriptionPlan.Name
+            }
+        };
+    }
 }
