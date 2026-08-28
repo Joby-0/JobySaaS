@@ -8,6 +8,7 @@ public class SocialAccount : ISocialAccount
     public string Username { get; set; }
     public string AccessToken { get; set; }
     public string RefreshToken { get; set; }
-    public DateTime TokenExpires { get; set; }
+    public DateTime? TokenExpiresAt { get; set; }
     public virtual IOrganization Organization { get; set; } = null!;
+    public DateTime CreatedAt { get; set; }
 }

@@ -165,7 +165,8 @@ namespace DbContext.Migrations
                     Username = table.Column<string>(type: "TEXT", nullable: true),
                     AccessToken = table.Column<string>(type: "TEXT", nullable: true),
                     RefreshToken = table.Column<string>(type: "TEXT", nullable: true),
-                    TokenExpires = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    TokenExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

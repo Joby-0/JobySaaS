@@ -56,4 +56,14 @@ public class OrganizationDbRepo
 
         await _dbContext.SaveChangesAsync();
     }
+
+    public async Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId)
+    {
+        var organizations = await _dbContext.Organizations
+            .AsNoTracking()
+            .Where(o => _dbContext.UserOrganizations.Any(uo => uo.OrganizationId == o.Id && uo.UserId == userId))
+            .ToListAsync();
+
+        return organizations.Cast<IOrganization>().ToList();
+    }
 }

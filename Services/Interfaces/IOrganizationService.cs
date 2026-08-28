@@ -7,4 +7,6 @@ public interface IOrganizationService
 {
     Task<IOrganization> CreateOrganizationAsync(CreateOrganizationRequest request, Guid ownerId,string ownerUserName, string email);
     Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId);
+
+    Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId);
 }

@@ -34,4 +34,6 @@ public class OrganizationService : IOrganizationService
 
     public Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId) => _repo.GetOrganizationByIdAsync(organizationId, requestUserId);
 
+    public Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId) => _repo.GetOrganizationsForUserAsync(userId);
+
 }

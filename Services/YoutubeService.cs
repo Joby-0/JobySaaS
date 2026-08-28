@@ -11,43 +11,62 @@ using Google.Apis.YouTube.v3;
 using GoogleYouTubeService = Google.Apis.YouTube.v3.YouTubeService;
 using Microsoft.AspNetCore.Http;
 using Google.Apis.YouTube.v3.Data;
+using Configuration;
+using Microsoft.Extensions.Caching.Memory;
 namespace Services;
 
 public class YoutubeService : IYoutubeService
 {
     readonly YoutubeDbRepo _repo;
     readonly IConfiguration _configuration;
+    readonly Encryptions _encryptions;
+    private readonly IMemoryCache _cache;
     readonly ILogger<IYoutubeService> _logger;
 
     readonly string _clientId;
     readonly string _clientSecret;
     readonly string _redirectUri;
     readonly string _scopes;
-    public YoutubeService(YoutubeDbRepo repo, IConfiguration configuration, ILogger<IYoutubeService> logger)
+    public YoutubeService(YoutubeDbRepo repo, IConfiguration configuration, Encryptions encryptions, IMemoryCache cache, ILogger<IYoutubeService> logger)
     {
         _repo = repo;
         _configuration = configuration;
         _logger = logger;
+        _encryptions = encryptions;
+        _cache = cache;
         _clientId = _configuration["GoogleOAuth:ClientId"];
         _clientSecret = _configuration["GoogleOAuth:ClientSecret"];
         _redirectUri = _configuration["GoogleOAuth:RedirectUri"];
         _scopes = _configuration["GoogleOAuth:Scopes"];
     }
 
-    public async Task<ServiceResult<string>> Connect()
+    public async Task<ServiceResult<string>> Connect(Guid organizationId)
     {
         try
         {
             if (string.IsNullOrEmpty(_clientId))
                 return ServiceResult<string>.Fail("Google Client ID is missing.");
-
             if (string.IsNullOrEmpty(_redirectUri))
                 return ServiceResult<string>.Fail("Google redirect URI is missing.");
-
             if (string.IsNullOrEmpty(_scopes))
                 return ServiceResult<string>.Fail("Google OAuth scope is missing.");
 
-            var url = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={_clientId}&redirect_uri={_redirectUri}&scope={_scopes}&response_type=code&access_type=offline&prompt=consent";
+            // random, unguessable token — this is what actually goes in the URL, not the org ID itself
+            var csrfToken = Guid.NewGuid().ToString("N");
+
+            _cache.Set(
+                $"oauth-state:{csrfToken}",
+                organizationId,
+                TimeSpan.FromMinutes(10)); // matches how long you'd reasonably expect someone to sit on Google's consent screen
+
+            var url = "https://accounts.google.com/o/oauth2/v2/auth" +
+                $"?client_id={Uri.EscapeDataString(_clientId)}" +
+                $"&redirect_uri={Uri.EscapeDataString(_redirectUri)}" +
+                $"&scope={Uri.EscapeDataString(_scopes)}" +
+                $"&response_type=code" +
+                $"&access_type=offline" +
+                $"&prompt=consent" +
+                $"&state={Uri.EscapeDataString(csrfToken)}";
 
             return ServiceResult<string>.Ok("YouTube authorization URL created.", url);
         }
@@ -58,77 +77,62 @@ public class YoutubeService : IYoutubeService
         }
     }
 
-    public async Task<ServiceResult<string>> Callback(string code)
+    public async Task<ServiceResult<string>> Callback(string code, string state)
     {
         try
         {
+            var cacheKey = $"oauth-state:{state}";
+
+            if (!_cache.TryGetValue(cacheKey, out Guid organizationId))
+            {
+                return ServiceResult<string>.Fail("This authorization request is invalid or has expired. Please try connecting again.");
+            }
+
+            // one-time use — remove immediately so the same state value can't be replayed
+            _cache.Remove(cacheKey);
+
             var tokenResponse = await HandleCallback(code);
 
             if (tokenResponse == null)
-            {
                 return ServiceResult<string>.Fail("Failed to receive a response from Google.");
-            }
-
             if (tokenResponse.IsStale)
-            {
                 return ServiceResult<string>.Fail("The authorization request has expired.");
-            }
-
             if (string.IsNullOrEmpty(tokenResponse.AccessToken))
-            {
                 return ServiceResult<string>.Fail("No access token was returned.");
-            }
-
             if (string.IsNullOrEmpty(tokenResponse.RefreshToken))
-            {
                 return ServiceResult<string>.Fail("No refresh token was returned.");
-            }
 
-            //get username 
             var credential = GoogleCredential.FromAccessToken(tokenResponse.AccessToken);
-            var youtube = new GoogleYouTubeService(
-                new BaseClientService.Initializer
-                {
-                    HttpClientInitializer = credential,
-                    ApplicationName = "AllMedia"
-                });
+            var youtube = new GoogleYouTubeService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "AllMedia"
+            });
 
             var channelRequest = youtube.Channels.List("snippet");
-
             channelRequest.Mine = true;
-
             var channelResponse = await channelRequest.ExecuteAsync();
 
-            if (channelResponse.Items == null || !channelResponse.Items.Any())
+            var channel = channelResponse.Items?.FirstOrDefault();
+            if (channel is null)
             {
                 return ServiceResult<string>.Fail("No YouTube channel was found for this account. Please ensure that the account has an associated YouTube channel.");
             }
 
-            var channel = channelResponse.Items.FirstOrDefault();
-            
-            //borde inte kunna vara null, men kollar ändå eftersom man kollar innan om listan med kanaler är tom
-            if (channel == null)
-            {
-                return ServiceResult<string>.Fail("No YouTube channel was found for this account. Please ensure that the account has an associated YouTube channel.");
-            }
-
-            var channelId = channel.Id;
             var username = channel.Snippet.Title;
-            // var profilePictureUrl = channel.Snippet.Thumbnails.High?.Url;
 
-
-            // Save SocialAccount here
             var result = await _repo.SaveSocialAccountAsync(new SocialAccountDbM
             {
                 Platform = "YouTube",
                 Username = username,
-                // ProfilePictureUrl = profilePictureUrl, vill man ha det kanske
-                AccessToken = tokenResponse.AccessToken,
-                RefreshToken = tokenResponse.RefreshToken,
-                TokenExpires = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresInSeconds ?? 0),
-                OrganizationId = Guid.NewGuid() // Replace with actual organization ID in a real implementation.
+                AccessToken = _encryptions.AesEncryptToBase64(tokenResponse.AccessToken),
+                RefreshToken = _encryptions.AesEncryptToBase64(tokenResponse.RefreshToken),
+                TokenExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresInSeconds ?? 0),
+                OrganizationId = organizationId
             });
-            if(result.Contains("Failed")){
+
+            if (result.Contains("Failed"))
+            {
                 return ServiceResult<string>.Fail(result);
             }
 
@@ -139,6 +143,8 @@ public class YoutubeService : IYoutubeService
             return ServiceResult<string>.Fail($"Failed to connect YouTube account: {ex.Message}");
         }
     }
+
+
     private async Task<TokenResponse> HandleCallback(string code)
     {
         // In a real implementation, this would exchange the 'code' for an access token.
@@ -157,7 +163,7 @@ public class YoutubeService : IYoutubeService
             });
 
         var token = await flow.ExchangeCodeForTokenAsync(
-            "user",
+            "user", // maybe change this if using flow.LoadTokenAsync(...) somethime
             code,
             _redirectUri,
             CancellationToken.None);
@@ -280,7 +286,7 @@ public class YoutubeService : IYoutubeService
 
             account.AccessToken = newToken.AccessToken;
 
-            account.TokenExpires = DateTime.UtcNow.AddSeconds(newToken.ExpiresInSeconds ?? 3600);
+            account.TokenExpiresAt = DateTime.UtcNow.AddSeconds(newToken.ExpiresInSeconds ?? 3600);
 
             await _repo.UpdateSocialAccountAsync(account.Id, account);
 
@@ -296,6 +302,6 @@ public class YoutubeService : IYoutubeService
     private bool IsAccessTokenValid(ISocialAccount account)
     {
         return !string.IsNullOrEmpty(account.AccessToken)
-            && account.TokenExpires > DateTime.UtcNow.AddMinutes(5);
+            && account.TokenExpiresAt > DateTime.UtcNow.AddMinutes(5);
     }
 }

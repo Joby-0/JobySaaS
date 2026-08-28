@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Services;
@@ -17,10 +19,17 @@ public class YoutubeController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize]
     [HttpGet("connect")]
-    public async Task<IActionResult> Connect()
+    public async Task<IActionResult> Connect([FromQuery] Guid organizationId)
     {
-        var result = await _service.Connect();
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _service.Connect(organizationId);
         if (!result.Success)
             return BadRequest(result);
 
@@ -28,9 +37,9 @@ public class YoutubeController : ControllerBase
     }
 
     [HttpGet("callback")]
-    public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string scope)
+    public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string state)
     {
-        var result = await _service.Callback(code);
+        var result = await _service.Callback(code, state);
 
         if (!result.Success)
             return BadRequest(result);

@@ -7,8 +7,8 @@ namespace Services;
 public interface IYoutubeService
 {
     // Task<string> UploadAsync(string filePath, string title, string description, string[] tags);
-    Task<ServiceResult<string>> Callback(string code);
-    Task<ServiceResult<string>> Connect();
+    Task<ServiceResult<string>> Callback(string code, string state);
+    Task<ServiceResult<string>> Connect(Guid organizationId);
 
     Task<ServiceResult<string>> UploadVideoAsync(IFormFile video, string title, string description, string categoryId, ISocialAccount account);
 

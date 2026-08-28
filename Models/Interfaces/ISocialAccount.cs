@@ -13,7 +13,8 @@ public interface ISocialAccount
     string AccessToken { get; set; }
     string RefreshToken { get; set; }
 
-    DateTime TokenExpires { get; set; }
+    DateTime CreatedAt {get; set;}
+    DateTime? TokenExpiresAt { get; set; }
 
     IOrganization Organization { get; set; }
 }

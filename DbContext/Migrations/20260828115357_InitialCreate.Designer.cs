@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DbContext.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20260826104940_InitialCreate")]
+    [Migration("20260828115357_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -433,6 +433,9 @@ namespace DbContext.Migrations
                     b.Property<string>("AccessToken")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("TEXT");
 
@@ -442,7 +445,7 @@ namespace DbContext.Migrations
                     b.Property<string>("RefreshToken")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("TokenExpires")
+                    b.Property<DateTime?>("TokenExpiresAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Username")

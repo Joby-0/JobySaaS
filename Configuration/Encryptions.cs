@@ -15,7 +15,13 @@ public class Encryptions
     public Encryptions(IOptions<AesEncryptionOptions> aesOptions)
     {
         _aesOption = aesOptions.Value;
-        _aesOption.HashKeyIv(Pbkdf2HashToBytes);
+
+        if (string.IsNullOrEmpty(_aesOption.Key))
+            throw new InvalidOperationException("AesEncryption:Key is missing from configuration.");
+        if (string.IsNullOrEmpty(_aesOption.Salt))
+            throw new InvalidOperationException("AesEncryption:Salt is missing from configuration.");
+
+        _aesOption.HashKey(Pbkdf2HashToBytes);
     }
 
     public string AesEncryptToBase64<T>(T sourceToEncrypt)

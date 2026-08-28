@@ -67,7 +67,21 @@ namespace AppWebApi.Controllers
             return Ok(organization);
         }
 
+        [Authorize]
+        [HttpGet]
+        [ActionName("mine")]
+        [ProducesResponseType(200, Type = typeof(List<IOrganization>))]
+        public async Task<IActionResult> GetMyOrganizations()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userId, out var requestUserId))
+            {
+                return Unauthorized();
+            }
 
+            var organizations = await _organizationService.GetOrganizationsForUserAsync(requestUserId);
+            return Ok(organizations);
+        }
         //Todo 
         //GET /organization/{id}/members
         //GET /organization/{id}/social-accounts

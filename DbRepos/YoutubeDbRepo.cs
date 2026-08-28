@@ -22,7 +22,7 @@ public class YoutubeDbRepo
             if (existing != null)
             {
                 existing.AccessToken = account.AccessToken;
-                existing.TokenExpires = account.TokenExpires;
+                existing.TokenExpiresAt = account.TokenExpiresAt;
             }
             else
             {
@@ -50,7 +50,7 @@ public class YoutubeDbRepo
         {
             existing.AccessToken = update.AccessToken;
             existing.RefreshToken = update.RefreshToken;
-            existing.TokenExpires = update.TokenExpires;
+            existing.TokenExpiresAt = update.TokenExpiresAt;
 
             await _dbContext.SaveChangesAsync();
         }

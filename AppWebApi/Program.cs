@@ -18,6 +18,7 @@ builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.Environment
 //adding support for several secret sources and database sources
 //to use either user secrets or azure key vault depending on UseAzureKeyVault tag in appsettings.json
 builder.Configuration.AddSecrets( "AppWebApi");
+builder.Services.AddMemoryCache();
 
 builder.Services.AddJwtTokenService(builder.Configuration);
 builder.Services.AddMainDbContext(builder.Configuration);
@@ -38,6 +39,8 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<UserDbRepo>();
 builder.Services.AddScoped<InvitationDbRepo>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
+builder.Services.AddScoped<SocialAccountDbRepo>();
+builder.Services.AddScoped<ISocialAccountService, SocialAccountService>();
 
 builder.Services.AddAuthorization(options =>
 {
