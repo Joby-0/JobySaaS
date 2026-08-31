@@ -1,6 +1,7 @@
 using Configuration;
 using DbModels;
 using DbRepos;
+using Models;
 using Models.DTO;
 
 namespace Services;
@@ -46,13 +47,17 @@ public class SocialAccountService : ISocialAccountService
             {
                 Id = a.Id,
                 AccountName = a.Username,
-                // ProfileImageUrl = a.
+                ProfileImageUrl = a.ProfileImageUrl,
+                LastSync = a.LastSync,
+                CostumUrl = a.CostumUrl,
+                Followers = a.Followers,
+                Status = a.Status,
                 Platform = a.Platform
             }).ToList()
         };
     }
-    
-    
+
+
 
     //behöver någ inte den här varje service har sin egna men det kansek man inte vill
     public async Task<ServiceResult<SocialAccountDto>> AddSocialAccountAsync(Guid organizationId, Guid requestUserId, string platform, string username, string accessToken, string? refreshToken, DateTime? tokenExpiresAt)
@@ -75,12 +80,16 @@ public class SocialAccountService : ISocialAccountService
                 Message = "You do not have access to this organization."
             };
         }
+        if (Enum.TryParse<SocialAccountPlatfrom>(platform, true, out var result))
+        {
+            // result is SocialAccountStatus.Connected
+        }
 
         var account = new SocialAccountDbM
         {
             Id = Guid.NewGuid(),
             OrganizationId = organizationId,
-            Platform = platform,
+            Platform = result,
             Username = username,
             AccessToken = _encryptions.AesEncryptToBase64(accessToken),
             RefreshToken = refreshToken is not null ? _encryptions.AesEncryptToBase64(refreshToken) : null,

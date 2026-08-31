@@ -109,7 +109,7 @@ public class YoutubeService : IYoutubeService
                 ApplicationName = "AllMedia"
             });
 
-            var channelRequest = youtube.Channels.List("snippet");
+            var channelRequest = youtube.Channels.List("snippet,statistics");
             channelRequest.Mine = true;
             var channelResponse = await channelRequest.ExecuteAsync();
 
@@ -123,12 +123,19 @@ public class YoutubeService : IYoutubeService
 
             var result = await _repo.SaveSocialAccountAsync(new SocialAccountDbM
             {
-                Platform = "YouTube",
+                Platform = SocialAccountPlatfrom.YouTube,
+                
                 Username = username,
+                CostumUrl = channel.Snippet.CustomUrl,
+                ProfileImageUrl = channel.Snippet.Thumbnails.Default__.Url,
                 AccessToken = _encryptions.AesEncryptToBase64(tokenResponse.AccessToken),
                 RefreshToken = _encryptions.AesEncryptToBase64(tokenResponse.RefreshToken),
                 TokenExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresInSeconds ?? 0),
-                OrganizationId = organizationId
+                CreatedAt = DateTime.UtcNow,
+                LastSync = DateTime.UtcNow,
+                Status = SocialAccountStatus.Connected,
+                OrganizationId = organizationId,
+                Followers = channel.Statistics.SubscriberCount ?? 0
             });
 
             if (result.Contains("Failed"))

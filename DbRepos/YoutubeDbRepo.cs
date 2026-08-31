@@ -17,7 +17,7 @@ public class YoutubeDbRepo
     {
         try
         {
-            var existing = await _dbContext.SocialAccounts.FirstOrDefaultAsync(x => x.Platform == "YouTube" && x.Username == account.Username && x.OrganizationId == account.OrganizationId);
+            var existing = await _dbContext.SocialAccounts.FirstOrDefaultAsync(x => x.Platform == account.Platform && x.Username == account.Username && x.OrganizationId == account.OrganizationId);
 
             if (existing != null)
             {
