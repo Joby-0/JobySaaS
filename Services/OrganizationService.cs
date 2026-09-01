@@ -56,4 +56,32 @@ public class OrganizationService : IOrganizationService
 
     public Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId) => _repo.GetOrganizationsForUserAsync(userId);
 
+    public async Task<ServiceResult<string>> RemoveOrganizationMemberAsync(Guid organizationId, Guid memberUserId, Guid requestUserId)
+    {
+        var userOrganization = await _repo.GetUserOrganizationAsync(organizationId, requestUserId);
+        if (userOrganization == null)
+        {
+            return new ServiceResult<string>
+            {
+                Success = false,
+                Message = "You do not have access to this organization."
+            };
+        }
+        if (userOrganization.Role != "Owner" && userOrganization.Role != "Admin")
+        {
+            return new ServiceResult<string>
+            {
+                Success = false,
+                Message = "You do not have access to this organization."
+            };
+        }
+
+        await _repo.RemoveOrganizationMemberAsync(organizationId, memberUserId);
+
+        return new ServiceResult<string>
+        {
+            Success = true,
+            Data = "Member removed successfully."
+        };
+    }
 }

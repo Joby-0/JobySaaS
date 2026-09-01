@@ -11,4 +11,5 @@ public interface IOrganizationService
     Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId);
 
     Task<ServiceResult<List<OrganizationMemberDTO>>> GetOrganizationMembersAsync(Guid organizationId, Guid requestUserId);
+    Task<ServiceResult<string>> RemoveOrganizationMemberAsync(Guid organizationId, Guid memberUserId, Guid requestUserId);
 }

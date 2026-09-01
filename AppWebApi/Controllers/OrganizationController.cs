@@ -100,13 +100,30 @@ namespace AppWebApi.Controllers
             return Ok(result.Data);
         }
 
+        [Authorize]
+        [HttpDelete("{id}/members/{userId}")]
+        [ProducesResponseType(200, Type = typeof(ServiceResult<string>))]
+        [ProducesResponseType(400, Type = typeof(string))]
+        public async Task<IActionResult> RemoveMember(Guid id, Guid userId)
+        {
+             var ruserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(ruserId, out var requestUserId))
+            {
+                return Unauthorized();
+            }
+            var result = await _organizationService.RemoveOrganizationMemberAsync(id, userId, requestUserId);
+            if (!result.Success)
+            {
+                return Forbid(result.Message);
+            }
+            return Ok(result.Data);
+        }
 
         //Todo
         //Delete /organization/{id}/delete
         //Update /organization/{id}/update
-        //Delete /organization/{id}/members/{userId} 
 
-        
+
         //GET /organization/{id}/posts
         //GET /organization/{id}/analytics
     }

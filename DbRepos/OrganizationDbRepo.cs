@@ -78,4 +78,14 @@ public class OrganizationDbRepo
         }).ToListAsync();
         return members;
     }
+
+    public async Task RemoveOrganizationMemberAsync(Guid organizationId, Guid memberUserId)
+    {
+        var userOrganization = await _dbContext.UserOrganizations.FirstOrDefaultAsync(x => x.OrganizationId == organizationId && x.UserId == memberUserId);
+        if (userOrganization != null)
+        {
+            _dbContext.UserOrganizations.Remove(userOrganization);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
 }
