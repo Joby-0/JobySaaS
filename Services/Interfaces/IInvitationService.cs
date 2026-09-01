@@ -8,4 +8,6 @@ public interface IInvitationService
     Task<ServiceResult<string>> CreateInviteCodeAsync(Guid organizationId, Guid requestUserId,int expireInMinutes);
     
     Task<ServiceResult<InvitationPreviewDto>> GetInviteAsync(string inviteCode);
+
+    Task<ServiceResult<bool>> AcceptInvitationAsync(string inviteCode, Guid requestUserId);
 }

@@ -7,7 +7,7 @@ using Services;
 namespace AppWebApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]/")]
 public class InvitationController : ControllerBase
 {
     private readonly IInvitationService _service;
@@ -17,8 +17,7 @@ public class InvitationController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("{organizationId:guid}")]
-    [ActionName("createinvitecode")]
+    [HttpPost("{organizationId:guid}/create")]
     [ProducesResponseType(200, Type = typeof(ServiceResult<string>))]
     [ProducesResponseType(401)]
     [ProducesResponseType(403)]
@@ -42,8 +41,7 @@ public class InvitationController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet]
-    [ActionName("preview")]
+    [HttpGet("preview")]
     [ProducesResponseType(200, Type = typeof(ServiceResult<InvitationPreviewDto>))]
     [ProducesResponseType(400)]
     public async Task<IActionResult> GetInviteInfo([FromQuery] string code)
@@ -55,6 +53,21 @@ public class InvitationController : ControllerBase
             return BadRequest(result);
         }
 
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpPost("accept")]
+    public async Task<IActionResult> AcceptInvite(string code)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            return Unauthorized();
+        }
+        var result = await _service.AcceptInvitationAsync(code, requestUserId);
+        
         return Ok(result);
     }
 }
