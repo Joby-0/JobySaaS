@@ -14,7 +14,7 @@ namespace AppWebApi.Controllers
     using Services;
 
     [ApiController]
-    [Route("api/[controller]/[action]")]
+    [Route("api/[controller]")]
     public class OrganizationController : ControllerBase
     {
         private readonly ILogger<OrganizationController> _logger;
@@ -27,8 +27,7 @@ namespace AppWebApi.Controllers
         }
 
         [Authorize]
-        [HttpPost]
-        [ActionName("CreateOrganization")]
+        [HttpPost("create")]
         [ProducesResponseType(200, Type = typeof(IOrganization))]
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> CreateOrganization([FromBody] CreateOrganizationRequest request)
@@ -46,8 +45,7 @@ namespace AppWebApi.Controllers
         }
 
         [Authorize]
-        [HttpPost("{organizationId:guid}")]
-        [ActionName("GetOrganization")]
+        [HttpGet("{organizationId:guid}/get")]
         [ProducesResponseType(200, Type = typeof(IOrganization))]
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> GetOrganization(Guid organizationId)
@@ -82,9 +80,33 @@ namespace AppWebApi.Controllers
             var organizations = await _organizationService.GetOrganizationsForUserAsync(requestUserId);
             return Ok(organizations);
         }
-        //Todo 
-        //GET /organization/{id}/members
-        //GET /organization/{id}/social-accounts
+
+        [Authorize]
+        [HttpGet("{id}/members")]
+        [ProducesResponseType(200, Type = typeof(List<OrganizationMemberDTO>))]
+        [ProducesResponseType(400, Type = typeof(string))]
+        public async Task<IActionResult> GetMembers(Guid id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userId, out var requestUserId))
+            {
+                return Unauthorized();
+            }
+            var result = await _organizationService.GetOrganizationMembersAsync(id, requestUserId);
+            if (!result.Success)
+            {
+                return Forbid(result.Message);
+            }
+            return Ok(result.Data);
+        }
+
+
+        //Todo
+        //Delete /organization/{id}/delete
+        //Update /organization/{id}/update
+        //Delete /organization/{id}/members/{userId} 
+
+        
         //GET /organization/{id}/posts
         //GET /organization/{id}/analytics
     }

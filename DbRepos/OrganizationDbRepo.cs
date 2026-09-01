@@ -3,6 +3,7 @@ using DbModels;
 // using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.DTO;
 
 namespace DbRepos;
 
@@ -65,5 +66,16 @@ public class OrganizationDbRepo
             .ToListAsync();
 
         return organizations.Cast<IOrganization>().ToList();
+    }
+
+    public async Task<List<OrganizationMemberDTO>> GetMembers(Guid id)
+    {
+        var members = await _dbContext.UserOrganizations.AsNoTracking().Where(x => x.OrganizationId == id).Select(x => new OrganizationMemberDTO
+        {
+            UserId = x.UserId,
+            OrganizationId = x.OrganizationId,
+            Role = x.Role
+        }).ToListAsync();
+        return members;
     }
 }

@@ -9,4 +9,6 @@ public interface IOrganizationService
     Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId);
 
     Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId);
+
+    Task<ServiceResult<List<OrganizationMemberDTO>>> GetOrganizationMembersAsync(Guid organizationId, Guid requestUserId);
 }

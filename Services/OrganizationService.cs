@@ -17,7 +17,7 @@ public class OrganizationService : IOrganizationService
     }
     public async Task<IOrganization> CreateOrganizationAsync(CreateOrganizationRequest request, Guid ownerId, string ownerUserName, string email)
     {
-        await _userRepo.EnsureUserExistsAsync(ownerId, ownerUserName,email);
+        await _userRepo.EnsureUserExistsAsync(ownerId, ownerUserName, email);
 
         var organization = new OrganizationDbM
         {
@@ -33,6 +33,26 @@ public class OrganizationService : IOrganizationService
     }
 
     public Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId) => _repo.GetOrganizationByIdAsync(organizationId, requestUserId);
+
+    public async Task<ServiceResult<List<OrganizationMemberDTO>>> GetOrganizationMembersAsync(Guid organizationId, Guid requestUserId)
+    {
+        var userOrganization = await _repo.GetUserOrganizationAsync(organizationId, requestUserId);
+        if (userOrganization == null)
+        {
+            return new ServiceResult<List<OrganizationMemberDTO>>
+            {
+                Success = false,
+                Message = "You do not have access to this organization."
+            };
+        }
+
+        var members = await _repo.GetMembers(organizationId);
+        return new ServiceResult<List<OrganizationMemberDTO>>
+        {
+            Success = true,
+            Data = members
+        };
+    }
 
     public Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId) => _repo.GetOrganizationsForUserAsync(userId);
 
