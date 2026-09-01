@@ -1,9 +1,9 @@
 namespace Models;
 
-public class Media : IMedia
+public interface IMedia
 {
-    public virtual Guid Id { get; set; }
-    public virtual Guid OrganizationId { get; set; }
+    public Guid Id { get; set; }
+    public Guid OrganizationId { get; set; }
 
     public string FileUrl { get; set; }
     public string ThumbnailUrl { get; set; }

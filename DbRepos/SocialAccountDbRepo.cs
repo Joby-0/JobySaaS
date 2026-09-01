@@ -2,6 +2,7 @@ using DbContext;
 using DbModels;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.DTO;
 
 namespace DbRepos;
 
@@ -64,18 +65,35 @@ public class SocialAccountDbRepo
         await _dbContext.SaveChangesAsync();
         return true;
     }
-    public async Task UpdateSocialAccountAsync(Guid id, ISocialAccount update)
+    public async Task UpdateSocialAccountAsync(Guid id, UpdateSocialAccountDto update)
     {
         var existing = await _dbContext.SocialAccounts
             .FirstOrDefaultAsync(x => x.Id == id);
 
-        if (existing != null)
-        {
-            existing.AccessToken = update.AccessToken;
-            existing.RefreshToken = update.RefreshToken;
-            existing.TokenExpiresAt = update.TokenExpiresAt;
+        if (existing == null)
+            return;
 
-            await _dbContext.SaveChangesAsync();
-        }
+        if (update.AccessToken != null)
+            existing.AccessToken = update.AccessToken;
+
+        if (update.RefreshToken != null)
+            existing.RefreshToken = update.RefreshToken;
+
+        if (update.TokenExpiresAt.HasValue)
+            existing.TokenExpiresAt = update.TokenExpiresAt.Value;
+        
+        if (update.Status != existing.Status)
+            existing.Status = update.Status;
+        
+        existing.LastSync = update.LastSync;
+
+        await _dbContext.SaveChangesAsync();
     }
+
+    public async Task UploadVideoAsync(SocialVideoDbM video)
+    {
+        _dbContext.SocialVideos.Add(video);
+        await _dbContext.SaveChangesAsync();
+    }
+
 }

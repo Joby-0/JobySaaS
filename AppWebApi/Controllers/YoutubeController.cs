@@ -52,9 +52,15 @@ public class YoutubeController : ControllerBase
         return Redirect($"{"localhost:5055"}/org/{result.Data}/social-accounts?youtube=success");
     }
 
+    [Authorize]
     [HttpPost("upload")]
-    public async Task<IActionResult> Upload(IFormFile video, [FromForm] string title, [FromForm] string description, [FromForm] string categoryId, [FromForm] ISocialAccount socialAccount)
+    public async Task<IActionResult> Upload(IFormFile video, [FromForm] string title, [FromForm] string description, [FromForm] string categoryId)
     {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            return Unauthorized();
+        }
         if (video == null || video.Length == 0)
         {
             return BadRequest("No video was uploaded.");
@@ -64,7 +70,7 @@ public class YoutubeController : ControllerBase
             return BadRequest("The uploaded file is not a video.");
         }
 
-        var result = await _service.UploadVideoAsync(video, title, description, categoryId, socialAccount);
+        var result = await _service.UploadVideoAsync(video, title, description, categoryId, requestUserId);
 
         if (!result.Success)
             return BadRequest(result);

@@ -13,7 +13,7 @@ public class MainDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<OrganizationSubscriptionDbM> OrganizationSubscriptions { get; set; }
     public DbSet<UserOrganizationDbM> UserOrganizations { get; set; }
     public DbSet<SocialAccountDbM> SocialAccounts { get; set; }
-    public DbSet<PostDbM> Posts { get; set; }
+    public DbSet<SocialVideoDbM> SocialVideos { get; set; }
     public DbSet<MediaDbM> Media { get; set; }
     public DbSet<PostAnalyticsDbM> PostAnalytics { get; set; }
     public DbSet<OrganizationInvitationDbM> OrganizationInvitations { get; set; }

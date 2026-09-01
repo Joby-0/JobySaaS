@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Google.Apis.YouTube.v3.Data;
 using Configuration;
 using Microsoft.Extensions.Caching.Memory;
+using Models.DTO;
 namespace Services;
 
 public class YoutubeService : IYoutubeService
@@ -124,7 +125,7 @@ public class YoutubeService : IYoutubeService
             var result = await _repo.SaveSocialAccountAsync(new SocialAccountDbM
             {
                 Platform = SocialAccountPlatfrom.YouTube,
-                
+
                 Username = username,
                 CostumUrl = channel.Snippet.CustomUrl,
                 ProfileImageUrl = channel.Snippet.Thumbnails.Default__.Url,
@@ -178,10 +179,10 @@ public class YoutubeService : IYoutubeService
         return token;
     }
 
-    public async Task<ServiceResult<string>> UploadVideoAsync(IFormFile video, string title, string description, string categoryId, ISocialAccount account)
+    public async Task<ServiceResult<string>> UploadVideoAsync(IFormFile video, string title, string description, string categoryId, Guid userId)
     {
         // Kollar om access token är giltig, annars refreshar den
-        var tokenResult = await GetAccessTokenAsync(account);
+        var tokenResult = await GetAccessTokenAsync(userId);
 
         //om tokenResult inte är success, returnera fail med error
         if (!tokenResult.Success)
@@ -196,7 +197,6 @@ public class YoutubeService : IYoutubeService
             return ServiceResult<string>.Fail("Access token is missing.");
         }
 
-        //save video to db
 
         // YouTube upload goes here
         var credential = GoogleCredential.FromAccessToken(accessToken);
@@ -226,17 +226,30 @@ public class YoutubeService : IYoutubeService
 
         var uploadResult = await upload.UploadAsync();
 
+        //save video to db
+        var videoId = upload.ResponseBody.Id;
+
+        await _repo.UploadVideoAsync(new SocialVideoDbM
+        {
+            Id = Guid.NewGuid(),
+            VideoId = videoId,
+            Status = uploadResult.Status == Google.Apis.Upload.UploadStatus.Completed ? VideoUploadStatus.Completed : VideoUploadStatus.Failed,
+            CreatedAt = DateTime.UtcNow,
+            // ProcessingPercentage = 
+            FailureReason = uploadResult.Exception?.Message
+        });
+
         return ServiceResult<string>.Ok("Video uploaded successfully.");
     }
 
-    public async Task<ServiceResult<string>> GetAccessTokenAsync(ISocialAccount account)
+    public async Task<ServiceResult<string>> GetAccessTokenAsync(Guid userId)
     {
-        //borde inte kunna vara null, men kollar ändå
+
+        var account = await _repo.GetSocialAccountByIdAsync(userId);
         if (account == null)
         {
-            return ServiceResult<string>.Fail("Social account is null.");
+            return ServiceResult<string>.Fail("Social account not found.");
         }
-
         // om giltig hoppar över den här delen och returnerar access token
         if (!IsAccessTokenValid(account))
         {
@@ -295,7 +308,15 @@ public class YoutubeService : IYoutubeService
 
             account.TokenExpiresAt = DateTime.UtcNow.AddSeconds(newToken.ExpiresInSeconds ?? 3600);
 
-            await _repo.UpdateSocialAccountAsync(account.Id, account);
+            await _repo.UpdateSocialAccountAsync(account.Id, new UpdateSocialAccountDto
+            {
+                AccessToken = account.AccessToken,
+                TokenExpiresAt = account.TokenExpiresAt,
+                LastSync = DateTime.UtcNow,
+                Status = SocialAccountStatus.Connected,
+                RefreshToken = account.RefreshToken // Ensure the refresh token is also updated if it has changed
+
+            });
 
             return ServiceResult<string>.Ok("YouTube access token refreshed successfully.", newToken.AccessToken);
         }
