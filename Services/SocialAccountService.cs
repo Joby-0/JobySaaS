@@ -18,6 +18,35 @@ public class SocialAccountService : ISocialAccountService
         _orgRepo = orgRepo;
         _encryptions = encryptions;
     }
+
+    public async Task<ServiceResult<bool>> DisconnectAccountAsync(Guid orgId, Guid requestUserId, Guid accountId)
+    {
+        var userOrganization = await _orgRepo.GetUserOrganizationAsync(orgId, requestUserId);
+        if (userOrganization == null)
+        {
+            return new ServiceResult<bool>
+            {
+                Success = false,
+                Message = "You do not have access to this organization."
+            };
+        }
+        if (userOrganization.Role != "Owner" && userOrganization.Role != "Admin")
+        {
+            return new ServiceResult<bool>
+            {
+                Success = false,
+                Message = "You do not have access to this organization."
+            };
+        }
+        await _repo.DisconnectAccountAsync(accountId, orgId);
+
+        return new ServiceResult<bool>
+        {
+            Success = true,
+            Data = true
+        };
+    }
+
     public async Task<ServiceResult<List<SocialAccountDto>>> GetConnectedAccountsAsync(Guid orgId, Guid requestUserId)
     {
         var userOrganization = await _orgRepo.GetUserOrganizationAsync(orgId, requestUserId);

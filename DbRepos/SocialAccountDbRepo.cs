@@ -65,6 +65,20 @@ public class SocialAccountDbRepo
         await _dbContext.SaveChangesAsync();
         return true;
     }
+    public async Task DisconnectAccountAsync(Guid accountId, Guid organizationId)
+    {
+        var account = await _dbContext.SocialAccounts.FirstOrDefaultAsync(x => x.Id == accountId && x.OrganizationId == organizationId);
+
+        if (account is null) return;
+
+        account.Status = SocialAccountStatus.Disconnected;
+        account.AccessToken = null;
+        account.RefreshToken = null;
+        account.TokenExpiresAt = null;
+        account.LastSync = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
+    }
     public async Task UpdateSocialAccountAsync(Guid id, UpdateSocialAccountDto update)
     {
         var existing = await _dbContext.SocialAccounts
