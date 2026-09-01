@@ -106,7 +106,7 @@ namespace AppWebApi.Controllers
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> RemoveMember(Guid id, Guid userId)
         {
-             var ruserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var ruserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(ruserId, out var requestUserId))
             {
                 return Unauthorized();

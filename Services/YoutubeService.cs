@@ -17,7 +17,7 @@ namespace Services;
 
 public class YoutubeService : IYoutubeService
 {
-    readonly YoutubeDbRepo _repo;
+    readonly SocialAccountDbRepo _repo;
     readonly IConfiguration _configuration;
     readonly Encryptions _encryptions;
     private readonly IMemoryCache _cache;
@@ -27,7 +27,7 @@ public class YoutubeService : IYoutubeService
     readonly string _clientSecret;
     readonly string _redirectUri;
     readonly string _scopes;
-    public YoutubeService(YoutubeDbRepo repo, IConfiguration configuration, Encryptions encryptions, IMemoryCache cache, ILogger<IYoutubeService> logger)
+    public YoutubeService(SocialAccountDbRepo repo, IConfiguration configuration, Encryptions encryptions, IMemoryCache cache, ILogger<IYoutubeService> logger)
     {
         _repo = repo;
         _configuration = configuration;
@@ -77,7 +77,7 @@ public class YoutubeService : IYoutubeService
         }
     }
 
-    public async Task<ServiceResult<string>> Callback(string code, string state)
+    public async Task<ServiceResult<Guid>> Callback(string code, string state)
     {
         try
         {
@@ -85,7 +85,7 @@ public class YoutubeService : IYoutubeService
 
             if (!_cache.TryGetValue(cacheKey, out Guid organizationId))
             {
-                return ServiceResult<string>.Fail("This authorization request is invalid or has expired. Please try connecting again.");
+                return ServiceResult<Guid>.Fail("This authorization request is invalid or has expired. Please try connecting again.");
             }
 
             // one-time use — remove immediately so the same state value can't be replayed
@@ -94,13 +94,13 @@ public class YoutubeService : IYoutubeService
             var tokenResponse = await HandleCallback(code);
 
             if (tokenResponse == null)
-                return ServiceResult<string>.Fail("Failed to receive a response from Google.");
+                return ServiceResult<Guid>.Fail("Failed to receive a response from Google.");
             if (tokenResponse.IsStale)
-                return ServiceResult<string>.Fail("The authorization request has expired.");
+                return ServiceResult<Guid>.Fail("The authorization request has expired.");
             if (string.IsNullOrEmpty(tokenResponse.AccessToken))
-                return ServiceResult<string>.Fail("No access token was returned.");
+                return ServiceResult<Guid>.Fail("No access token was returned.");
             if (string.IsNullOrEmpty(tokenResponse.RefreshToken))
-                return ServiceResult<string>.Fail("No refresh token was returned.");
+                return ServiceResult<Guid>.Fail("No refresh token was returned.");
 
             var credential = GoogleCredential.FromAccessToken(tokenResponse.AccessToken);
             var youtube = new GoogleYouTubeService(new BaseClientService.Initializer
@@ -116,7 +116,7 @@ public class YoutubeService : IYoutubeService
             var channel = channelResponse.Items?.FirstOrDefault();
             if (channel is null)
             {
-                return ServiceResult<string>.Fail("No YouTube channel was found for this account. Please ensure that the account has an associated YouTube channel.");
+                return ServiceResult<Guid>.Fail("No YouTube channel was found for this account. Please ensure that the account has an associated YouTube channel.");
             }
 
             var username = channel.Snippet.Title;
@@ -140,14 +140,14 @@ public class YoutubeService : IYoutubeService
 
             if (result.Contains("Failed"))
             {
-                return ServiceResult<string>.Fail(result);
+                return ServiceResult<Guid>.Fail(result);
             }
 
-            return ServiceResult<string>.Ok("YouTube account connected successfully.");
+            return ServiceResult<Guid>.Ok("YouTube account connected successfully.", organizationId);
         }
         catch (Exception ex)
         {
-            return ServiceResult<string>.Fail($"Failed to connect YouTube account: {ex.Message}");
+            return ServiceResult<Guid>.Fail($"Failed to connect YouTube account: {ex.Message}");
         }
     }
 

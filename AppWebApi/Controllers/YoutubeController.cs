@@ -21,6 +21,9 @@ public class YoutubeController : ControllerBase
 
     [Authorize]
     [HttpGet("connect")]
+    [ProducesResponseType(200, Type = typeof(string))]
+    [ProducesResponseType(302, Type = typeof(string))]
+    [ProducesResponseType(400, Type = typeof(string))]
     public async Task<IActionResult> Connect([FromQuery] Guid organizationId)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -42,9 +45,11 @@ public class YoutubeController : ControllerBase
         var result = await _service.Callback(code, state);
 
         if (!result.Success)
-            return BadRequest(result);
+        {
+            return Redirect($"{"localhost:5055"}/connect?youtube=error&message={Uri.EscapeDataString(result.Message)}");
+        }
 
-        return Ok(result);
+        return Redirect($"{"localhost:5055"}/org/{result.Data}/social-accounts?youtube=success");
     }
 
     [HttpPost("upload")]

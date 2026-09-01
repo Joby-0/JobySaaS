@@ -8,7 +8,7 @@ using Services;
 namespace AppWebApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 
 public class SocialAccountController : ControllerBase
 {
@@ -20,8 +20,7 @@ public class SocialAccountController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("{organizationId:guid}")]
-    [ActionName("mine")]
+    [HttpGet("{organizationId:guid}/mine")]
     public async Task<IActionResult> GetConnectedAccounts(Guid organizationId)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
