@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Models;
 
 namespace DbModels;
@@ -9,9 +10,12 @@ public class PostAnalyticsDbM : PostAnalytics
     [Key]
     public override Guid Id { get; set; }
 
-    [Required]
-    public Guid SocialVideoId { get; set; }
+    [NotMapped]
+    public override ISocialVideo SocialVideo { get => SocialVideoDbM; set => new NotImplementedException(); }
 
-    [ForeignKey(nameof(SocialVideoId))]
-    public ISocialVideo SocialVideo { get; set; } = null!;
+    [JsonIgnore]
+    public Guid SocialVideoId { get; set; }
+    [ForeignKey("SocialVideoId")]
+    [JsonIgnore]
+    public SocialVideoDbM SocialVideoDbM { get; set; }
 }

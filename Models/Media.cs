@@ -3,7 +3,6 @@ namespace Models;
 public class Media : IMedia
 {
     public virtual Guid Id { get; set; }
-    public virtual Guid OrganizationId { get; set; }
 
     public string FileUrl { get; set; }
     public string ThumbnailUrl { get; set; }
@@ -18,4 +17,5 @@ public class Media : IMedia
     public TimeSpan? Duration { get; set; }
 
     public DateTime CreatedAt { get; set; }
+    public virtual IOrganization Organization { get ; set; }
 }
