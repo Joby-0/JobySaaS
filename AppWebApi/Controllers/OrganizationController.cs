@@ -66,8 +66,7 @@ namespace AppWebApi.Controllers
         }
 
         [Authorize]
-        [HttpGet]
-        [ActionName("mine")]
+        [HttpGet("mine")]
         [ProducesResponseType(200, Type = typeof(List<IOrganization>))]
         public async Task<IActionResult> GetMyOrganizations()
         {

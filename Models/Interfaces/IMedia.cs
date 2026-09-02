@@ -18,4 +18,6 @@ public interface IMedia
     public TimeSpan? Duration { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    public List<ISocialVideo> SocialVideos { get; set; }
 }

@@ -3,7 +3,7 @@ namespace Models;
 public class SocialAccount : ISocialAccount
 {
     public virtual Guid Id { get; set; }
-    public SocialAccountPlatfrom Platform { get; set; }
+    public SocialPlatfrom Platform { get; set; }
     public string Username { get; set; }
     public string AccessToken { get; set; }
     public string RefreshToken { get; set; }

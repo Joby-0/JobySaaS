@@ -19,4 +19,11 @@ public class MediaDbM : Media
     [ForeignKey("OrganizationId")]
     [JsonIgnore]
     public OrganizationDbM OrganizationDbM { get; set; }
+
+    [NotMapped]
+    public override List<ISocialVideo> SocialVideos { get => SocialVideoDbMs.Cast<ISocialVideo>().ToList(); set => throw new NotImplementedException(); }
+
+    [JsonIgnore]
+    public List<SocialVideoDbM> SocialVideoDbMs { get; set; }
+
 }

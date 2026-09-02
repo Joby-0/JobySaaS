@@ -6,7 +6,6 @@ public class Media : IMedia
 
     public string FileUrl { get; set; }
     public string ThumbnailUrl { get; set; }
-
     public string FileName { get; set; }
     public string MimeType { get; set; }
     public long FileSize { get; set; }
@@ -18,4 +17,5 @@ public class Media : IMedia
 
     public DateTime CreatedAt { get; set; }
     public virtual IOrganization Organization { get ; set; }
+    public virtual List<ISocialVideo> SocialVideos { get; set; }
 }
