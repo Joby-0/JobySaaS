@@ -10,13 +10,13 @@ public class SocialAccountDbM : SocialAccount
     [Key]
     public override Guid Id { get; set; }
 
-    [Required]
-    public override Guid OrganizationId { get; set; }
+    [NotMapped]
+    public override IOrganization Organization { get => OrganizationDbM; set => new NotImplementedException(); }
 
-    [ForeignKey(nameof(OrganizationId))]
+    [JsonIgnore]
+    public Guid OrganizationId { get; set; }
+
+    [ForeignKey("OrganizationId")]
     [JsonIgnore]
     public OrganizationDbM OrganizationDbM { get; set; } = null!;
-
-    [NotMapped]
-    public override IOrganization Organization { get => OrganizationDbM ; set => new NotImplementedException(); }
 }

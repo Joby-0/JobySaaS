@@ -9,4 +9,5 @@ public class PostAnalytics : IPostAnalytics
     public int Comments { get; set; }
     public int Shares { get; set; }
     public DateTime ReportedAt { get; set; }
+    public virtual ISocialVideo SocialVideo { get; set; }
 }

@@ -3,7 +3,7 @@ namespace Models;
 public interface IMedia
 {
     public Guid Id { get; set; }
-    public Guid OrganizationId { get; set; }
+    public IOrganization Organization { get; set; }
 
     public string FileUrl { get; set; }
     public string ThumbnailUrl { get; set; }

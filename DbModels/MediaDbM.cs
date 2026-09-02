@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Models;
 
 namespace DbModels;
@@ -9,28 +10,13 @@ public class MediaDbM : Media
     [Key]
     public Guid Id { get; set; }
 
-    [Required]
+    [NotMapped]
+    public override IOrganization Organization { get => OrganizationDbM; set => new NotImplementedException(); }
+
+    [JsonIgnore]
     public Guid OrganizationId { get; set; }
 
-    [Required]
-    [StringLength(256)]
-    public string FileUrl { get; set; }
-
-    [StringLength(256)]
-    public string ThumbnailUrl { get; set; }
-
-    [Required]
-    [StringLength(120)]
-    public string Title { get; set; }
-
-    [StringLength(500)]
-    public string Description { get; set; }
-
-    [StringLength(50)]
-    public string Duration { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    [ForeignKey(nameof(OrganizationId))]
-    public OrganizationDbM Organization { get; set; } = null!;
+    [ForeignKey("OrganizationId")]
+    [JsonIgnore]
+    public OrganizationDbM OrganizationDbM { get; set; }
 }
