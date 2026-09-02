@@ -3,7 +3,7 @@ namespace Models.DTO;
 public class SocialAccountDto
 {
     public Guid Id { get; set; }
-    public SocialPlatfrom Platform { get; set; }
+    public SocialPlatform Platform { get; set; }
     public string AccountName { get; set; }
     public string CostumUrl { get; set; }
     public string ProfileImageUrl { get; set; }

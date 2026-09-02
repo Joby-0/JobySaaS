@@ -2,7 +2,7 @@ namespace Models;
 public interface ISocialVideo
 {
     public Guid Id { get; set; }
-    public SocialPlatfrom Platform { get; set; }
+    public SocialPlatform Platform { get; set; }
 
     public string VideoId { get; set; }
 

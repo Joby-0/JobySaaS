@@ -12,6 +12,6 @@ public class SocialVideo : ISocialVideo
     public string? FailureReason { get; set; }
 
     public DateTime CreatedAt { get; set; }
-    public SocialPlatfrom Platform { get; set; }
+    public SocialPlatform Platform { get; set; }
     public virtual IMedia Media { get; set; }
 }

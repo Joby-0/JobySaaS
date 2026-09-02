@@ -124,7 +124,7 @@ public class YoutubeService : IYoutubeService
 
             var result = await _repo.SaveSocialAccountAsync(new SocialAccountDbM
             {
-                Platform = SocialPlatfrom.YouTube,
+                Platform = SocialPlatform.YouTube,
 
                 Username = username,
                 CostumUrl = channel.Snippet.CustomUrl,

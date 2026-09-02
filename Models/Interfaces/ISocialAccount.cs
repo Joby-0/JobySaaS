@@ -4,7 +4,7 @@ public interface ISocialAccount
 {
     Guid Id { get; set; }
 
-    SocialPlatfrom Platform { get; set; }
+    SocialPlatform Platform { get; set; }
 
     string Username { get; set; }
     string CostumUrl {get; set;}
@@ -29,7 +29,7 @@ public enum SocialAccountStatus
     Error,
     Disconnected
 }
-public enum SocialPlatfrom
+public enum SocialPlatform
 {
     YouTube,
     TikTok,
