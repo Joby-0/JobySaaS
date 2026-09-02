@@ -97,11 +97,11 @@ namespace AppWebApi.Controllers
             {
                 return Forbid(result.Message);
             }
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         [Authorize]
-        [HttpDelete("{id}/members/{userId}")]
+        [HttpDelete("{id}/members/{userId}/remove")]
         [ProducesResponseType(200, Type = typeof(ServiceResult<string>))]
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> RemoveMember(Guid id, Guid userId)

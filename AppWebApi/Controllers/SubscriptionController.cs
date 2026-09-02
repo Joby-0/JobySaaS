@@ -42,6 +42,7 @@ public class SubscriptionController : ControllerBase
 
         return Ok(result);
     }
+    
     [Authorize]
     [HttpGet("{organizationId:guid}")]
     [ActionName("status")]

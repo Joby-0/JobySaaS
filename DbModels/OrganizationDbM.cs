@@ -30,9 +30,9 @@ public class OrganizationDbM : Organization
     public ICollection<SocialAccountDbM> SocialAccountDbMs { get; set; } = new List<SocialAccountDbM>();
 
     [NotMapped]
-     public override List<IPost> Posts { get => PostsDbMs?.ToList<IPost>(); set => new NotImplementedException(); }
+     public override List<ISocialVideo> SocialVideos { get => SocialVideoDbMs?.ToList<ISocialVideo>(); set => new NotImplementedException(); }
     [JsonIgnore]
-    public ICollection<PostDbM> PostsDbMs { get; set; } = new List<PostDbM>();
+    public ICollection<SocialVideoDbM> SocialVideoDbMs { get; set; } = new List<SocialVideoDbM>();
 
     [NotMapped]
     public override List<IMedia> Media { get => MediaDbMs?.ToList<IMedia>(); set => new NotImplementedException(); }

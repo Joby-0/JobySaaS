@@ -235,6 +235,7 @@ public class YoutubeService : IYoutubeService
             VideoId = videoId,
             Status = uploadResult.Status == Google.Apis.Upload.UploadStatus.Completed ? VideoUploadStatus.Completed : VideoUploadStatus.Failed,
             CreatedAt = DateTime.UtcNow,
+            
             // ProcessingPercentage = 
             FailureReason = uploadResult.Exception?.Message
         });

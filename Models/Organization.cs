@@ -9,6 +9,6 @@ public class Organization : IOrganization
     public virtual IOrganizationSubscription? OrganizationSubscription { get; set; }
     public virtual List<IUserOrganization> Users { get; set; }
     public virtual List<ISocialAccount> SocialAccounts { get; set; }
-    public virtual List<IPost> Posts { get; set; }
+    public virtual List<ISocialVideo> SocialVideos { get; set; }
     public virtual List<IMedia> Media { get; set; }
 }

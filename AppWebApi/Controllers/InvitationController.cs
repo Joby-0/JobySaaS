@@ -57,8 +57,8 @@ public class InvitationController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("accept")]
-    public async Task<IActionResult> AcceptInvite(string code)
+    [HttpGet("accept")]
+    public async Task<IActionResult> AcceptInvite([FromQuery] string code)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 

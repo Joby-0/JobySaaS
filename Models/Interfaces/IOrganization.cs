@@ -11,7 +11,7 @@ public interface IOrganization
     IOrganizationSubscription? OrganizationSubscription { get; set; }
     List<IUserOrganization> Users { get; set; }
     List<ISocialAccount> SocialAccounts { get; set; }
-    List<IPost> Posts { get; set; }
+    List<ISocialVideo> SocialVideos { get; set; }
     List<IMedia> Media { get; set; }
 
 }

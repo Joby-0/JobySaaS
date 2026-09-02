@@ -35,8 +35,8 @@ public class SocialAccountController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("{organizationId:guid}/disconnect")]
-    public async Task<IActionResult> DisconnectAccount(Guid organizationId, [FromBody] Guid accountId)
+    [HttpGet("{organizationId:guid}/disconnect")]
+    public async Task<IActionResult> DisconnectAccount(Guid organizationId, [FromQuery] Guid accountId)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userId, out var requestUserId)) return Unauthorized();

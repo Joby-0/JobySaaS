@@ -28,7 +28,6 @@ builder.Services.AddStripe(builder.Configuration);
 builder.Services.AddScoped<IStripeService, StripeService>();
 
 
-builder.Services.AddScoped<YoutubeDbRepo>();
 builder.Services.AddScoped<IYoutubeService, YoutubeService>();
 builder.Services.AddScoped<AuthDbRepo>();
 builder.Services.AddScoped<IAuthService, AuthService>();
