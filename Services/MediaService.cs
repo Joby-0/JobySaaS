@@ -1,6 +1,7 @@
 using DbModels;
 using DbRepos;
 using Models.DTO;
+using Microsoft.AspNetCore.Http;
 
 namespace Services;
 
@@ -49,6 +50,51 @@ public class MediaService : IMediaService
         return ServiceResult<MediaDetailsDTO>.Ok(
             "Media retrieved successfully.",
             ToDetailsDto(media));
+    }
+
+    public async Task<ServiceResult<Guid>> CreateMediaAsync(Guid organizationId, IFormFile file, string title, string description, Guid requestUserId)
+    {
+        var access = await EnsureOrganizationAccessAsync(organizationId, requestUserId);
+        if (!access.Success)
+            return ServiceResult<Guid>.Fail(access.Error!);
+
+        if (file is null || file.Length == 0)
+            return ServiceResult<Guid>.Fail("No media file was uploaded.");
+
+        await using var input = file.OpenReadStream();
+        await using var buffer = new MemoryStream();
+        await input.CopyToAsync(buffer);
+
+        var media = await _repo.CreateAsync(new MediaDbM
+        {
+            Id = Guid.NewGuid(),
+            OrganizationId = organizationId,
+            FileContent = buffer.ToArray(),
+            FileName = Path.GetFileName(file.FileName),
+            MimeType = file.ContentType,
+            FileSize = file.Length,
+            Title = title,
+            Description = description,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        return ServiceResult<Guid>.Ok("Media uploaded successfully.", media.Id);
+    }
+
+    public async Task<ServiceResult<bool>> PublishMediaAsync(Guid organizationId, Guid mediaId, List<Guid> socialAccountIds, Guid requestUserId)
+    {
+        var access = await EnsureOrganizationAccessAsync(organizationId, requestUserId);
+        if (!access.Success)
+        {
+            return ServiceResult<bool>.Fail(access.Error!);
+        }
+
+        // TODO: Confirm that the media belongs to the organization and is publishable.
+        // TODO: Validate the selected social accounts and publish the media to each platform.
+        // TODO: Persist the resulting publication status and platform-specific identifiers.
+
+        // Publishing is intentionally not implemented yet, so this succeeds without data.
+        return ServiceResult<bool>.Ok(string.Empty);
     }
 
     private async Task<ServiceResult<bool>> EnsureOrganizationAccessAsync(Guid organizationId, Guid requestUserId)

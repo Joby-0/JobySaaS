@@ -13,6 +13,20 @@ public class MediaDbRepo
         _dbContext = dbContext;
     }
 
+    public async Task<MediaDbM> CreateAsync(MediaDbM media)
+    {
+        _dbContext.Media.Add(media);
+        await _dbContext.SaveChangesAsync();
+        return media;
+    }
+
+    public Task<MediaDbM?> GetByIdAsync(Guid organizationId, Guid mediaId)
+    {
+        return _dbContext.Media
+            .AsNoTracking()
+            .FirstOrDefaultAsync(media => media.OrganizationId == organizationId && media.Id == mediaId);
+    }
+
     public Task<List<MediaDbM>> GetMediaListAsync(Guid organizationId, int pageNumber, int pageSize)
     {
         return _dbContext.Media

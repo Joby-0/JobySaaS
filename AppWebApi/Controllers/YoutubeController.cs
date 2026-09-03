@@ -54,23 +54,18 @@ public class YoutubeController : ControllerBase
 
     [Authorize]
     [HttpPost("publish")]
-    public async Task<IActionResult> Publish(IFormFile video, [FromForm] string title, [FromForm] string description, [FromForm] string categoryId, [FromForm] string mediaId)
+    public async Task<IActionResult> Publish([FromForm] Guid mediaId, [FromForm] string title,[FromForm] string description, [FromForm] string categoryId, [FromForm] string userId)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(authenticatedUserId, out var requestUserId))
         {
             return Unauthorized();
         }
-        if (video == null || video.Length == 0)
+        if (!Guid.TryParse(userId, out var accountId))
         {
-            return BadRequest("No video was uploaded.");
+            return BadRequest("A valid selected YouTube account userId is required.");
         }
-        if (!video.ContentType.StartsWith("video/"))
-        {
-            return BadRequest("The uploaded file is not a video.");
-        }
-
-        var result = await _service.UploadVideoAsync(video, title, description, categoryId, requestUserId);
+        var result = await _service.UploadVideoAsync(mediaId, title, description, categoryId, accountId, requestUserId);
 
         if (!result.Success)
             return BadRequest(result);

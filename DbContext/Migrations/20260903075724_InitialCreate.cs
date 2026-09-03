@@ -77,6 +77,7 @@ namespace DbContext.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     OrganizationId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FileContent = table.Column<byte[]>(type: "BLOB", nullable: true),
                     FileUrl = table.Column<string>(type: "TEXT", nullable: true),
                     ThumbnailUrl = table.Column<string>(type: "TEXT", nullable: true),
                     FileName = table.Column<string>(type: "TEXT", nullable: true),
@@ -198,16 +199,24 @@ namespace DbContext.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    MediaId = table.Column<Guid>(type: "TEXT", nullable: false),
                     OrganizationDbMId = table.Column<Guid>(type: "TEXT", nullable: true),
                     VideoId = table.Column<string>(type: "TEXT", nullable: true),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
                     ProcessingPercentage = table.Column<int>(type: "INTEGER", nullable: true),
                     FailureReason = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Platform = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SocialVideos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SocialVideos_Media_MediaId",
+                        column: x => x.MediaId,
+                        principalTable: "Media",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_SocialVideos_Organizations_OrganizationDbMId",
                         column: x => x.OrganizationDbMId,
@@ -364,6 +373,11 @@ namespace DbContext.Migrations
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SocialVideos_MediaId",
+                table: "SocialVideos",
+                column: "MediaId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SocialVideos_OrganizationDbMId",
                 table: "SocialVideos",
                 column: "OrganizationDbMId");
@@ -417,9 +431,6 @@ namespace DbContext.Migrations
                 name: "FeatureDbM");
 
             migrationBuilder.DropTable(
-                name: "Media");
-
-            migrationBuilder.DropTable(
                 name: "OrganizationInvitations");
 
             migrationBuilder.DropTable(
@@ -436,6 +447,9 @@ namespace DbContext.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Media");
 
             migrationBuilder.DropTable(
                 name: "SubscriptionPlans");

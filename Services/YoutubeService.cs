@@ -19,6 +19,8 @@ namespace Services;
 public class YoutubeService : IYoutubeService
 {
     readonly SocialAccountDbRepo _repo;
+    readonly MediaDbRepo _mediaRepo;
+    readonly OrganizationDbRepo _organizationRepo;
     readonly IConfiguration _configuration;
     readonly Encryptions _encryptions;
     private readonly IMemoryCache _cache;
@@ -28,9 +30,11 @@ public class YoutubeService : IYoutubeService
     readonly string _clientSecret;
     readonly string _redirectUri;
     readonly string _scopes;
-    public YoutubeService(SocialAccountDbRepo repo, IConfiguration configuration, Encryptions encryptions, IMemoryCache cache, ILogger<IYoutubeService> logger)
+    public YoutubeService(SocialAccountDbRepo repo, MediaDbRepo mediaRepo, OrganizationDbRepo organizationRepo, IConfiguration configuration, Encryptions encryptions, IMemoryCache cache, ILogger<IYoutubeService> logger)
     {
         _repo = repo;
+        _mediaRepo = mediaRepo;
+        _organizationRepo = organizationRepo;
         _configuration = configuration;
         _logger = logger;
         _encryptions = encryptions;
@@ -179,10 +183,24 @@ public class YoutubeService : IYoutubeService
         return token;
     }
 
-    public async Task<ServiceResult<string>> UploadVideoAsync(IFormFile video, string title, string description, string categoryId, Guid userId)
+    public async Task<ServiceResult<string>> UploadVideoAsync(Guid mediaId, string title, string description, string categoryId, Guid accountId, Guid requestUserId)
     {
+        var account = await _repo.GetSocialAccountByIdAsync(accountId);
+        if (account is null || account.Platform != SocialPlatform.YouTube)
+            return ServiceResult<string>.Fail("The selected YouTube account could not be found.");
+
+        var membership = await _organizationRepo.GetUserOrganizationAsync(account.OrganizationId, requestUserId);
+        if (membership is null)
+            return ServiceResult<string>.Fail("You do not have access to this organization.");
+
+        var media = await _mediaRepo.GetByIdAsync(account.OrganizationId, mediaId);
+        if (media is null)
+            return ServiceResult<string>.Fail("Media could not be found.");
+        if (media.FileContent is null || media.FileContent.Length == 0)
+            return ServiceResult<string>.Fail("The selected media has no stored file content.");
+
         // Kollar om access token är giltig, annars refreshar den
-        var tokenResult = await GetAccessTokenAsync(userId);
+        var tokenResult = await GetAccessTokenAsync(accountId);
 
         //om tokenResult inte är success, returnera fail med error
         if (!tokenResult.Success)
@@ -209,8 +227,8 @@ public class YoutubeService : IYoutubeService
         {
             Snippet = new VideoSnippet
             {
-                Title = title,
-                Description = description,
+                Title = string.IsNullOrWhiteSpace(title) ? media.Title : title,
+                Description = string.IsNullOrWhiteSpace(description) ? media.Description : description,
                 CategoryId = categoryId
             },
 
@@ -220,19 +238,24 @@ public class YoutubeService : IYoutubeService
             }
         };
 
-        await using var stream = video.OpenReadStream();
+        await using var stream = new MemoryStream(media.FileContent, writable: false);
 
-        var upload = youtube.Videos.Insert(youtubeVideo, "snippet,status", stream, video.ContentType);
+        var upload = youtube.Videos.Insert(youtubeVideo, "snippet,status", stream, media.MimeType ?? "video/mp4");
 
         var uploadResult = await upload.UploadAsync();
 
         //save video to db
+        if (uploadResult.Status != Google.Apis.Upload.UploadStatus.Completed || upload.ResponseBody is null)
+            return ServiceResult<string>.Fail(uploadResult.Exception?.Message ?? "YouTube upload failed.");
+
         var videoId = upload.ResponseBody.Id;
 
         await _repo.UploadVideoAsync(new SocialVideoDbM
         {
             Id = Guid.NewGuid(),
             VideoId = videoId,
+            MediaId = media.Id,
+            Platform = SocialPlatform.YouTube,
             Status = uploadResult.Status == Google.Apis.Upload.UploadStatus.Completed ? VideoUploadStatus.Completed : VideoUploadStatus.Failed,
             CreatedAt = DateTime.UtcNow,
             

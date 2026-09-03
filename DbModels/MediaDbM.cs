@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 using Models;
 
 namespace DbModels;
@@ -8,7 +9,7 @@ namespace DbModels;
 public class MediaDbM : Media
 {
     [Key]
-    public Guid Id { get; set; }
+    public override Guid Id { get; set; }
 
     [NotMapped]
     public override IOrganization Organization { get => OrganizationDbM; set => new NotImplementedException(); }
@@ -25,5 +26,14 @@ public class MediaDbM : Media
 
     [JsonIgnore]
     public List<SocialVideoDbM> SocialVideoDbMs { get; set; }
+
+    // The upload is bound from multipart/form-data, while FileContent is the
+    // durable representation used when the media is published later.
+    [NotMapped]
+    [JsonIgnore]
+    public IFormFile File { get; set; }
+
+    [JsonIgnore]
+    public byte[] FileContent { get; set; }
 
 }

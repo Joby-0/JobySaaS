@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DbContext.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20260902155039_InitialCreate")]
+    [Migration("20260903075724_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -217,6 +217,9 @@ namespace DbContext.Migrations
 
                     b.Property<TimeSpan?>("Duration")
                         .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("FileContent")
+                        .HasColumnType("BLOB");
 
                     b.Property<string>("FileName")
                         .HasColumnType("TEXT");
@@ -447,8 +450,14 @@ namespace DbContext.Migrations
                     b.Property<string>("FailureReason")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("MediaId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("OrganizationDbMId")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Platform")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("ProcessingPercentage")
                         .HasColumnType("INTEGER");
@@ -460,6 +469,8 @@ namespace DbContext.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MediaId");
 
                     b.HasIndex("OrganizationDbMId");
 
@@ -725,9 +736,17 @@ namespace DbContext.Migrations
 
             modelBuilder.Entity("DbModels.SocialVideoDbM", b =>
                 {
+                    b.HasOne("DbModels.MediaDbM", "MediaDbM")
+                        .WithMany("SocialVideoDbMs")
+                        .HasForeignKey("MediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DbModels.OrganizationDbM", null)
                         .WithMany("SocialVideoDbMs")
                         .HasForeignKey("OrganizationDbMId");
+
+                    b.Navigation("MediaDbM");
                 });
 
             modelBuilder.Entity("DbModels.UserOrganizationDbM", b =>
@@ -747,6 +766,11 @@ namespace DbContext.Migrations
                     b.Navigation("OrganizationDbM");
 
                     b.Navigation("UserDbM");
+                });
+
+            modelBuilder.Entity("DbModels.MediaDbM", b =>
+                {
+                    b.Navigation("SocialVideoDbMs");
                 });
 
             modelBuilder.Entity("DbModels.OrganizationDbM", b =>

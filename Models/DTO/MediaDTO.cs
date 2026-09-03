@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace Models.DTO;
 
 public class MediaListDTO
@@ -28,17 +30,9 @@ public class MediaDetailsDTO
 
 public class CreateMediaDTO
 {
-    public string FileUrl { get; set; }
-    public string ThumbnailUrl { get; set; }
-    public string FileName { get; set; }
-    public string MimeType { get; set; }
-    public long FileSize { get; set; }
-
+    public IFormFile Video { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
-
-    public TimeSpan? Duration { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-    public Guid OrganizationId { get; set; }
+    public string CategoryId { get; set; }
+    public string MediaId { get; set; }
 }

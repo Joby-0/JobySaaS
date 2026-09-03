@@ -64,7 +64,7 @@ public class MediaController : ControllerBase
     [HttpPost("{organizationId:guid}/media/upload")]
     [ProducesResponseType(200, Type = typeof(ServiceResult<Guid>))]
     [ProducesResponseType(400)]
-    public async Task<IActionResult> CreateMedia(Guid organizationId, [FromBody] CreateMediaDTO mediaDetails)
+    public async Task<IActionResult> CreateMedia(Guid organizationId, [FromForm] CreateMediaDTO createMediaDto)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -73,17 +73,16 @@ public class MediaController : ControllerBase
             return Unauthorized();
         }
 
-        if (mediaDetails == null)
-        {
-            return BadRequest("Media details cannot be null.");
-        }
-        if(organizationId != mediaDetails.OrganizationId)
-        {
-            return BadRequest("Organization ID in the URL does not match the Organization ID in the request body.");
-        }
 
-        // Call the service to create the media
-        var result = await _service.CreateMediaAsync(organizationId, mediaDetails, requestUserId);
+        if (createMediaDto.Video == null || createMediaDto.Video.Length == 0)
+        {
+            return BadRequest("No media file was uploaded.");
+        }
+        var file = createMediaDto.Video;
+        var title = createMediaDto.Title;
+        var description = createMediaDto.Description;
+
+        var result = await _service.CreateMediaAsync(organizationId, file, title, description, requestUserId);
 
         if (!result.Success)
         {
@@ -93,4 +92,27 @@ public class MediaController : ControllerBase
         return Ok(result);
     }
 
+
+    [Authorize]
+    [HttpPost("{organizationId:guid}/media/{mediaId:guid}/publish")]
+    [ProducesResponseType(200, Type = typeof(ServiceResult<bool>))]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> PublishMedia(Guid organizationId, Guid mediaId, [FromBody] List<Guid> socialAccountIds)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _service.PublishMediaAsync(organizationId, mediaId, socialAccountIds, requestUserId);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
 }

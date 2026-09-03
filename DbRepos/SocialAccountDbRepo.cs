@@ -20,7 +20,7 @@ public class SocialAccountDbRepo
         return await _dbContext.SocialAccounts.AsNoTracking().Where(x => x.OrganizationId == organizationId).ToListAsync();
     }
 
-    public async Task<ISocialAccount?> GetSocialAccountByIdAsync(Guid id)
+    public async Task<SocialAccountDbM?> GetSocialAccountByIdAsync(Guid id)
     {
         return await _dbContext.SocialAccounts.FirstOrDefaultAsync(x => x.Id == id);
     }
