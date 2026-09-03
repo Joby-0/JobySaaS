@@ -53,8 +53,8 @@ public class YoutubeController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("upload")]
-    public async Task<IActionResult> Upload(IFormFile video, [FromForm] string title, [FromForm] string description, [FromForm] string categoryId)
+    [HttpPost("publish")]
+    public async Task<IActionResult> Publish(IFormFile video, [FromForm] string title, [FromForm] string description, [FromForm] string categoryId, [FromForm] string mediaId)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userId, out var requestUserId))

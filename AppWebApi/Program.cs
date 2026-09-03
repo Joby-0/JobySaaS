@@ -40,6 +40,8 @@ builder.Services.AddScoped<InvitationDbRepo>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
 builder.Services.AddScoped<SocialAccountDbRepo>();
 builder.Services.AddScoped<ISocialAccountService, SocialAccountService>();
+builder.Services.AddScoped<MediaDbRepo>();
+builder.Services.AddScoped<IMediaService, MediaService>();
 
 builder.Services.AddAuthorization(options =>
 {
