@@ -54,7 +54,7 @@ public class OrganizationService : IOrganizationService
         };
     }
 
-    public Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId) => _repo.GetOrganizationsForUserAsync(userId);
+    public Task<List<OrganizationDto>> GetOrganizationsForUserAsync(Guid userId) => _repo.GetOrganizationsForUserAsync(userId);
 
     public async Task<ServiceResult<string>> RemoveOrganizationMemberAsync(Guid organizationId, Guid memberUserId, Guid requestUserId)
     {

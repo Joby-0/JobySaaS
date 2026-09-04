@@ -58,14 +58,21 @@ public class OrganizationDbRepo
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<IOrganization>> GetOrganizationsForUserAsync(Guid userId)
+    public async Task<List<OrganizationDto>> GetOrganizationsForUserAsync(Guid userId)
     {
-        var organizations = await _dbContext.Organizations
-            .AsNoTracking()
-            .Where(o => _dbContext.UserOrganizations.Any(uo => uo.OrganizationId == o.Id && uo.UserId == userId))
-            .ToListAsync();
+        var organizations = await _dbContext.UserOrganizations
+        .AsNoTracking()
+        .Where(uo => uo.UserId == userId)
+        .Select(uo => new OrganizationDto
+        {
+            Id = uo.Organization.Id,
+            Name = uo.Organization.Name,
+            OwnerId = uo.Organization.OwnerId,
+            Role = uo.Role
+        })
+        .ToListAsync();
 
-        return organizations.Cast<IOrganization>().ToList();
+        return organizations;
     }
 
     public async Task<List<OrganizationMemberDTO>> GetMembers(Guid id)

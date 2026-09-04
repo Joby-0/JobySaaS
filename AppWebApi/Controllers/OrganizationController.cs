@@ -82,7 +82,7 @@ namespace AppWebApi.Controllers
 
         [Authorize]
         [HttpGet("{id}/members")]
-        [ProducesResponseType(200, Type = typeof(List<OrganizationMemberDTO>))]
+        [ProducesResponseType(200, Type = typeof(ServiceResult<List<OrganizationMemberDTO>>))]
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> GetMembers(Guid id)
         {
