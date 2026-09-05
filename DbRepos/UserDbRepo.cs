@@ -20,7 +20,7 @@ public class UserDbRepo
 
         return user;
     }
-    public async Task<UserDbM> EnsureUserExistsAsync(Guid userId, string userName, string email)
+    public async Task<UserDbM> EnsureUserExistsAsync(Guid userId, string userName, string email, string? profileImageUrl = null, string? firstName = null, string? lastName = null)
     {
         var user = await _dbContext.Users.FindAsync(userId);
         if (user is not null) return user;
@@ -30,7 +30,11 @@ public class UserDbRepo
             Id = userId,
             UserName = userName,
             Email = email,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            ProfileImage = profileImageUrl,
+            FirstName = firstName,
+            LastName = lastName
         };
 
         _dbContext.Users.Add(user);

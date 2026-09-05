@@ -18,8 +18,7 @@ public class OrganizationDbRepo
 
     public async Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId)
     {
-        var organization = await _dbContext.Organizations.AsNoTracking().FirstOrDefaultAsync(o => o.Id == organizationId &&
-        _dbContext.UserOrganizations.Any(uo => uo.OrganizationId == o.Id && uo.UserId == requestUserId));
+        var organization = await _dbContext.Organizations.AsNoTracking().FirstOrDefaultAsync(o => o.Id == organizationId && o.UserOrganizationDbMs.Any(uo => uo.UserId == requestUserId));
 
         return organization;
     }
