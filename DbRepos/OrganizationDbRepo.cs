@@ -32,7 +32,7 @@ public class OrganizationDbRepo
                 UserId = organization.OwnerId,
                 OrganizationId = organization.Id,
                 Role = "Owner",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
             });
             await _dbContext.SaveChangesAsync();
             return organization;

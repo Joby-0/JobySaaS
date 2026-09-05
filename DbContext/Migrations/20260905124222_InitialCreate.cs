@@ -166,6 +166,35 @@ namespace DbContext.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PublishJobs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    MediaId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PublishJobs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PublishJobs_Media_MediaId",
+                        column: x => x.MediaId,
+                        principalTable: "Media",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PublishJobs_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SocialAccounts",
                 columns: table => new
                 {
@@ -249,6 +278,37 @@ namespace DbContext.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PublishJobAccounts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    PublishJobId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    SocialAccountId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    ErrorMessage = table.Column<string>(type: "TEXT", nullable: true),
+                    ExternalPostId = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PublishJobAccounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PublishJobAccounts_PublishJobs_PublishJobId",
+                        column: x => x.PublishJobId,
+                        principalTable: "PublishJobs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PublishJobAccounts_SocialAccounts_SocialAccountId",
+                        column: x => x.SocialAccountId,
+                        principalTable: "SocialAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -368,6 +428,32 @@ namespace DbContext.Migrations
                 column: "SocialVideoId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PublishJobAccounts_PublishJobId",
+                table: "PublishJobAccounts",
+                column: "PublishJobId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PublishJobAccounts_PublishJobId_SocialAccountId",
+                table: "PublishJobAccounts",
+                columns: new[] { "PublishJobId", "SocialAccountId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PublishJobAccounts_SocialAccountId",
+                table: "PublishJobAccounts",
+                column: "SocialAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PublishJobs_MediaId",
+                table: "PublishJobs",
+                column: "MediaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PublishJobs_OrganizationId",
+                table: "PublishJobs",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SocialAccounts_OrganizationId",
                 table: "SocialAccounts",
                 column: "OrganizationId");
@@ -437,13 +523,19 @@ namespace DbContext.Migrations
                 name: "PostAnalytics");
 
             migrationBuilder.DropTable(
-                name: "SocialAccounts");
+                name: "PublishJobAccounts");
 
             migrationBuilder.DropTable(
                 name: "UserOrganizations");
 
             migrationBuilder.DropTable(
                 name: "SocialVideos");
+
+            migrationBuilder.DropTable(
+                name: "PublishJobs");
+
+            migrationBuilder.DropTable(
+                name: "SocialAccounts");
 
             migrationBuilder.DropTable(
                 name: "Users");

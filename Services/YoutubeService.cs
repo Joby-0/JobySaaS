@@ -263,7 +263,7 @@ public class YoutubeService : IYoutubeService
             FailureReason = uploadResult.Exception?.Message
         });
 
-        return ServiceResult<string>.Ok("Video uploaded successfully.");
+        return ServiceResult<string>.Ok("Video uploaded successfully.", videoId);
     }
 
     public async Task<ServiceResult<string>> GetAccessTokenAsync(Guid userId)

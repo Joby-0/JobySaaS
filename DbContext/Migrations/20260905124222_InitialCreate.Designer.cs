@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DbContext.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20260903075724_InitialCreate")]
+    [Migration("20260905124222_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -389,6 +389,81 @@ namespace DbContext.Migrations
                     b.ToTable("PostAnalytics");
                 });
 
+            modelBuilder.Entity("DbModels.PublishJobAccountDbM", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalPostId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("PublishJobId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SocialAccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublishJobId");
+
+                    b.HasIndex("SocialAccountId");
+
+                    b.HasIndex("PublishJobId", "SocialAccountId")
+                        .IsUnique();
+
+                    b.ToTable("PublishJobAccounts");
+                });
+
+            modelBuilder.Entity("DbModels.PublishJobDbM", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("MediaId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MediaId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("PublishJobs");
+                });
+
             modelBuilder.Entity("DbModels.SocialAccountDbM", b =>
                 {
                     b.Property<Guid>("Id")
@@ -723,6 +798,44 @@ namespace DbContext.Migrations
                     b.Navigation("SocialVideoDbM");
                 });
 
+            modelBuilder.Entity("DbModels.PublishJobAccountDbM", b =>
+                {
+                    b.HasOne("DbModels.PublishJobDbM", "PublishJob")
+                        .WithMany("Accounts")
+                        .HasForeignKey("PublishJobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DbModels.SocialAccountDbM", "SocialAccount")
+                        .WithMany()
+                        .HasForeignKey("SocialAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PublishJob");
+
+                    b.Navigation("SocialAccount");
+                });
+
+            modelBuilder.Entity("DbModels.PublishJobDbM", b =>
+                {
+                    b.HasOne("DbModels.MediaDbM", "MediaDbM")
+                        .WithMany()
+                        .HasForeignKey("MediaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DbModels.OrganizationDbM", "OrganizationDbM")
+                        .WithMany("PublishJobDbMs")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MediaDbM");
+
+                    b.Navigation("OrganizationDbM");
+                });
+
             modelBuilder.Entity("DbModels.SocialAccountDbM", b =>
                 {
                     b.HasOne("DbModels.OrganizationDbM", "OrganizationDbM")
@@ -777,11 +890,18 @@ namespace DbContext.Migrations
                 {
                     b.Navigation("MediaDbMs");
 
+                    b.Navigation("PublishJobDbMs");
+
                     b.Navigation("SocialAccountDbMs");
 
                     b.Navigation("SocialVideoDbMs");
 
                     b.Navigation("UserOrganizationDbMs");
+                });
+
+            modelBuilder.Entity("DbModels.PublishJobDbM", b =>
+                {
+                    b.Navigation("Accounts");
                 });
 
             modelBuilder.Entity("DbModels.SubscriptionPlanDbM", b =>
