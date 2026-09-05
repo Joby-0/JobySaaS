@@ -8,7 +8,7 @@ using Services;
 namespace AppWebApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 public class SubscriptionController : ControllerBase
 {
     readonly ILogger<SubscriptionController> _logger;
@@ -20,12 +20,11 @@ public class SubscriptionController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("{organizationId:guid}")]
-    [ActionName("subscription")]
+    [HttpPost("{organizationId:guid}/subscription")]
     public async Task<IActionResult> CreateSubscriptionCheckout(Guid organizationId, [FromBody] SelectSubscriptionRequest request)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -34,23 +33,21 @@ public class SubscriptionController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet]
-    [ActionName("plans")]
+    [HttpGet("plans")]
     public async Task<IActionResult> GetSubscriptions()
     {
         var result = await _service.GetSubscriptionsAsync();
 
         return Ok(result);
     }
-    
+
     [Authorize]
-    [HttpGet("{organizationId:guid}")]
-    [ActionName("status")]
+    [HttpGet("{organizationId:guid}/status")]
     [ProducesResponseType(200, Type = typeof(ServiceResult<OrganizationSubscriptionStatusDto>))]
     public async Task<IActionResult> GetSubscriptionStatus(Guid organizationId)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -58,5 +55,13 @@ public class SubscriptionController : ControllerBase
         var result = await _service.GetSubscriptionStatusAsync(organizationId, requestUserId);
         return Ok(result);
     }
-
+    private Guid GetUserIdFromClaims()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            throw new UnauthorizedAccessException("Invalid user ID.");
+        }
+        return requestUserId;
+    }
 }

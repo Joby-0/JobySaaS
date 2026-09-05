@@ -24,9 +24,8 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(400)]
     public async Task<IActionResult> CreateInviteCode(Guid organizationId, [FromQuery] int expireInMinutes)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -60,14 +59,23 @@ public class InvitationController : ControllerBase
     [HttpGet("accept")]
     public async Task<IActionResult> AcceptInvite([FromQuery] string code)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
         var result = await _service.AcceptInvitationAsync(code, requestUserId);
         
         return Ok(result);
+    }
+
+     private Guid GetUserIdFromClaims()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            throw new UnauthorizedAccessException("Invalid user ID.");
+        }
+        return requestUserId;
     }
 }

@@ -23,8 +23,7 @@ public class SocialAccountController : ControllerBase
     [HttpGet("{organizationId:guid}/mine")]
     public async Task<IActionResult> GetConnectedAccounts(Guid organizationId)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!Guid.TryParse(userId, out var requestUserId)) return Unauthorized();
+        var requestUserId = GetUserIdFromClaims();
 
         var result = await _service.GetConnectedAccountsAsync(organizationId, requestUserId);
         if (!result.Success)
@@ -38,8 +37,7 @@ public class SocialAccountController : ControllerBase
     [HttpGet("{organizationId:guid}/disconnect")]
     public async Task<IActionResult> DisconnectAccount(Guid organizationId, [FromQuery] Guid accountId)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!Guid.TryParse(userId, out var requestUserId)) return Unauthorized();
+        var requestUserId = GetUserIdFromClaims();
 
         var result = await _service.DisconnectAccountAsync(organizationId, requestUserId, accountId);
         if (!result.Success)
@@ -47,5 +45,15 @@ public class SocialAccountController : ControllerBase
             return BadRequest(result);
         }
         return Ok(result);
+    }
+
+    private Guid GetUserIdFromClaims()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            throw new UnauthorizedAccessException("Invalid user ID.");
+        }
+        return requestUserId;
     }
 }

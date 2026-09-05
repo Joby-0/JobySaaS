@@ -26,8 +26,8 @@ public class YoutubeController : ControllerBase
     [ProducesResponseType(400, Type = typeof(string))]
     public async Task<IActionResult> Connect([FromQuery] Guid organizationId)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -54,10 +54,10 @@ public class YoutubeController : ControllerBase
 
     [Authorize]
     [HttpPost("publish")]
-    public async Task<IActionResult> Publish([FromForm] Guid mediaId, [FromForm] string title,[FromForm] string description, [FromForm] string categoryId, [FromForm] string userId)
+    public async Task<IActionResult> Publish([FromForm] Guid mediaId, [FromForm] string title, [FromForm] string description, [FromForm] string categoryId, [FromForm] string userId)
     {
-        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!Guid.TryParse(authenticatedUserId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -71,5 +71,15 @@ public class YoutubeController : ControllerBase
             return BadRequest(result);
 
         return Ok(result);
+    }
+
+    private Guid GetUserIdFromClaims()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            throw new UnauthorizedAccessException("Invalid user ID.");
+        }
+        return requestUserId;
     }
 }

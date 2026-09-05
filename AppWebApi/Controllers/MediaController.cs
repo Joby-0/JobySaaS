@@ -7,7 +7,7 @@ using Services;
 namespace AppWebApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]/")]
+[Route("api/[controller]")]
 public class MediaController : ControllerBase
 {
     private readonly IMediaService _service;
@@ -22,9 +22,8 @@ public class MediaController : ControllerBase
     [ProducesResponseType(400)]
     public async Task<IActionResult> GetMediaList(Guid organizationId, [FromQuery] int pageNumber, [FromQuery] int pageSize)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -44,9 +43,8 @@ public class MediaController : ControllerBase
     [ProducesResponseType(400)]
     public async Task<IActionResult> GetMediaDetails(Guid organizationId, Guid mediaId)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -66,9 +64,8 @@ public class MediaController : ControllerBase
     [ProducesResponseType(400)]
     public async Task<IActionResult> CreateMedia(Guid organizationId, [FromForm] CreateMediaDTO createMediaDto)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -99,9 +96,8 @@ public class MediaController : ControllerBase
     [ProducesResponseType(400)]
     public async Task<IActionResult> PublishMedia(Guid organizationId, Guid mediaId, [FromBody] List<Guid> socialAccountIds)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (!Guid.TryParse(userId, out var requestUserId))
+        var requestUserId = GetUserIdFromClaims();
+        if (requestUserId == Guid.Empty)
         {
             return Unauthorized();
         }
@@ -114,5 +110,15 @@ public class MediaController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    private Guid GetUserIdFromClaims()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userId, out var requestUserId))
+        {
+            throw new UnauthorizedAccessException("Invalid user ID.");
+        }
+        return requestUserId;
     }
 }

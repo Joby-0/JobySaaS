@@ -50,11 +50,7 @@ namespace AppWebApi.Controllers
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> GetOrganization(Guid organizationId)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userId, out var requestUserId))
-            {
-                return Unauthorized();
-            }
+            var requestUserId = GetUserIdFromClaims();
 
             var organization = await _organizationService.GetOrganizationByIdAsync(organizationId, requestUserId);
 
@@ -70,11 +66,7 @@ namespace AppWebApi.Controllers
         [ProducesResponseType(200, Type = typeof(List<IOrganization>))]
         public async Task<IActionResult> GetMyOrganizations()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userId, out var requestUserId))
-            {
-                return Unauthorized();
-            }
+            var requestUserId = GetUserIdFromClaims();
 
             var organizations = await _organizationService.GetOrganizationsForUserAsync(requestUserId);
             return Ok(organizations);
@@ -86,11 +78,8 @@ namespace AppWebApi.Controllers
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> GetMembers(Guid id)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userId, out var requestUserId))
-            {
-                return Unauthorized();
-            }
+            var requestUserId = GetUserIdFromClaims();
+
             var result = await _organizationService.GetOrganizationMembersAsync(id, requestUserId);
             if (!result.Success)
             {
@@ -105,11 +94,8 @@ namespace AppWebApi.Controllers
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> RemoveMember(Guid id, Guid userId)
         {
-            var ruserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(ruserId, out var requestUserId))
-            {
-                return Unauthorized();
-            }
+            var requestUserId = GetUserIdFromClaims();
+            
             var result = await _organizationService.RemoveOrganizationMemberAsync(id, userId, requestUserId);
             if (!result.Success)
             {
@@ -125,5 +111,15 @@ namespace AppWebApi.Controllers
 
         //GET /organization/{id}/posts
         //GET /organization/{id}/analytics
+
+        private Guid GetUserIdFromClaims()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userId, out var requestUserId))
+            {
+                throw new UnauthorizedAccessException("Invalid user ID.");
+            }
+            return requestUserId;
+        }
     }
 }
