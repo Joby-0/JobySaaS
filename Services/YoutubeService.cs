@@ -258,7 +258,6 @@ public class YoutubeService : IYoutubeService
             Platform = SocialPlatform.YouTube,
             Status = uploadResult.Status == Google.Apis.Upload.UploadStatus.Completed ? VideoUploadStatus.Completed : VideoUploadStatus.Failed,
             CreatedAt = DateTime.UtcNow,
-            
             // ProcessingPercentage = 
             FailureReason = uploadResult.Exception?.Message
         });
@@ -296,7 +295,7 @@ public class YoutubeService : IYoutubeService
             return ServiceResult<string>.Ok(socialAccount.AccessToken);
         }
 
-        return ServiceResult<string>.Ok(account.AccessToken);
+        return ServiceResult<string>.Ok(_encryptions.AesDecryptFromBase64<string>(account.AccessToken));
     }
     public async Task<ServiceResult<string>> RefreshTokenAsync(ISocialAccount account)
     {
@@ -304,7 +303,8 @@ public class YoutubeService : IYoutubeService
         {
             if (string.IsNullOrEmpty(account.RefreshToken))
             {
-                return ServiceResult<string>.Fail("No refresh token is available.");
+                return ServiceResult<string>.Fail(
+                    "No refresh token is available.");
             }
 
             var flow = new GoogleAuthorizationCodeFlow(
@@ -318,37 +318,73 @@ public class YoutubeService : IYoutubeService
                     Scopes = _scopes.Split(' ')
                 });
 
+            var refreshTokenDecrypted = _encryptions.AesDecryptFromBase64<string>(account.RefreshToken);
+
             var newToken = await flow.RefreshTokenAsync(
                 "user",
-                account.RefreshToken,
+                refreshTokenDecrypted,
                 CancellationToken.None);
 
             if (string.IsNullOrEmpty(newToken.AccessToken))
             {
-                return ServiceResult<string>.Fail("Google did not return a new access token.");
+                return ServiceResult<string>.Fail(
+                    "Google did not return a new access token.");
             }
 
             account.AccessToken = newToken.AccessToken;
 
-            account.TokenExpiresAt = DateTime.UtcNow.AddSeconds(newToken.ExpiresInSeconds ?? 3600);
+            account.TokenExpiresAt =
+                DateTime.UtcNow.AddSeconds(
+                    newToken.ExpiresInSeconds ?? 3600);
 
-            await _repo.UpdateSocialAccountAsync(account.Id, new UpdateSocialAccountDto
+            // Google doesn't necessarily return a new refresh token.
+            // Keep the old one if it doesn't.
+            var refreshToken = string.IsNullOrEmpty(newToken.RefreshToken)
+                ? account.RefreshToken
+                : newToken.RefreshToken;
+
+            account.RefreshToken = refreshToken;
+
+            await _repo.UpdateSocialAccountAsync(
+                account.Id,
+                new UpdateSocialAccountDto
+                {
+                    AccessToken = account.AccessToken,
+                    TokenExpiresAt = account.TokenExpiresAt,
+                    LastSync = DateTime.UtcNow,
+                    Status = SocialAccountStatus.Connected,
+                    RefreshToken = refreshToken
+                });
+
+            return ServiceResult<string>.Ok(
+                "YouTube access token refreshed successfully.",
+                newToken.AccessToken);
+        }
+        catch (TokenResponseException ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to refresh YouTube token for social account {AccountId}.",
+                account.Id);
+
+            if (ex.Error?.Error == "invalid_grant")
             {
-                AccessToken = account.AccessToken,
-                TokenExpiresAt = account.TokenExpiresAt,
-                LastSync = DateTime.UtcNow,
-                Status = SocialAccountStatus.Connected,
-                RefreshToken = account.RefreshToken // Ensure the refresh token is also updated if it has changed
+                return ServiceResult<string>.Fail(
+                    "The YouTube authorization is no longer valid. The account needs to be reconnected.");
+            }
 
-            });
-
-            return ServiceResult<string>.Ok("YouTube access token refreshed successfully.", newToken.AccessToken);
+            return ServiceResult<string>.Fail(
+                $"Failed to refresh YouTube access token: {ex.Error?.Error}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to refresh YouTube access token.");
+            _logger.LogError(
+                ex,
+                "Failed to refresh YouTube access token for social account {AccountId}.",
+                account.Id);
 
-            return ServiceResult<string>.Fail($"Failed to refresh YouTube access token: {ex.Message}");
+            return ServiceResult<string>.Fail(
+                "Failed to refresh YouTube access token.");
         }
     }
     private bool IsAccessTokenValid(ISocialAccount account)

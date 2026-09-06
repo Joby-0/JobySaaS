@@ -114,7 +114,7 @@ public class MediaController : ControllerBase
             return BadRequest(result);
         }
 
-        return Accepted(new { jobId = result.Data });
+        return Accepted(result);
     }
 
     private Guid GetUserIdFromClaims()
