@@ -9,11 +9,15 @@ public class MediaService : IMediaService
 {
     private readonly MediaDbRepo _repo;
     private readonly OrganizationDbRepo _organizationRepo;
+    private readonly SocialAccountDbRepo _socialAccountRepo;
+    private readonly IPublishQueue _publishQueue;
 
-    public MediaService(MediaDbRepo repo, OrganizationDbRepo organizationRepo)
+    public MediaService(MediaDbRepo repo, OrganizationDbRepo organizationRepo, SocialAccountDbRepo socialAccountRepo, IPublishQueue publishQueue)
     {
         _repo = repo;
         _organizationRepo = organizationRepo;
+        _socialAccountRepo = socialAccountRepo;
+        _publishQueue = publishQueue;
     }
 
     public async Task<ServiceResult<List<MediaListDTO>>> GetMediaListAsync(Guid organizationId, Guid requestUserId, int pageNumber, int pageSize)
@@ -81,20 +85,47 @@ public class MediaService : IMediaService
         return ServiceResult<Guid>.Ok("Media uploaded successfully.", media.Id);
     }
 
-    public async Task<ServiceResult<bool>> PublishMediaAsync(Guid organizationId, Guid mediaId, List<Guid> socialAccountIds, Guid requestUserId)
+    public async Task<ServiceResult<Guid>> PublishMediaAsync(Guid organizationId, Guid mediaId, List<Guid> socialAccountIds, Guid requestUserId)
     {
         var access = await EnsureOrganizationAccessAsync(organizationId, requestUserId);
         if (!access.Success)
+            return ServiceResult<Guid>.Fail(access.Error!);
+
+        if (socialAccountIds is null || socialAccountIds.Count == 0)
+            return ServiceResult<Guid>.Fail("At least one social account must be supplied.");
+
+        var distinctIds = socialAccountIds.Distinct().ToList();
+        if (distinctIds.Count != socialAccountIds.Count)
+            return ServiceResult<Guid>.Fail("Duplicate social account IDs are not allowed.");
+
+        var media = await _repo.GetByIdAsync(organizationId, mediaId);
+        if (media is null)
+            return ServiceResult<Guid>.Fail("Media could not be found in this organization.");
+
+        var accounts = await _socialAccountRepo.GetByIdsInOrganizationAsync(organizationId, distinctIds);
+        if (accounts.Count != distinctIds.Count)
+            return ServiceResult<Guid>.Fail("One or more selected social accounts do not belong to this organization.");
+
+        var now = DateTime.UtcNow;
+        var job = new PublishJobDbM
         {
-            return ServiceResult<bool>.Fail(access.Error!);
-        }
+            Id = Guid.NewGuid(),
+            OrganizationId = organizationId,
+            MediaId = mediaId,
+            Status = Models.PublishJobStatus.Pending,
+            CreatedAt = now,
+            Accounts = accounts.Select(account => new PublishJobAccountDbM
+            {
+                Id = Guid.NewGuid(),
+                SocialAccountId = account.Id,
+                Status = Models.PublishJobAccountStatus.Pending,
+                CreatedAt = now
+            }).ToList()
+        };
 
-        // TODO: Confirm that the media belongs to the organization and is publishable.
-        // TODO: Validate the selected social accounts and publish the media to each platform.
-        // TODO: Persist the resulting publication status and platform-specific identifiers.
-
-        // Publishing is intentionally not implemented yet, so this succeeds without data.
-        return ServiceResult<bool>.Ok(string.Empty);
+        await _repo.CreatePublishJobAsync(job);
+        await _publishQueue.EnqueueAsync(job.Id);
+        return ServiceResult<Guid>.Ok("Media publishing job queued.", job.Id);
     }
 
     private async Task<ServiceResult<bool>> EnsureOrganizationAccessAsync(Guid organizationId, Guid requestUserId)

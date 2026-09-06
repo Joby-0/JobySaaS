@@ -38,4 +38,7 @@ public class OrganizationDbM : Organization
     public override List<IMedia> Media { get => MediaDbMs?.ToList<IMedia>(); set => new NotImplementedException(); }
     [JsonIgnore]
     public ICollection<MediaDbM> MediaDbMs { get; set; } = new List<MediaDbM>();
+
+    [JsonIgnore]
+    public ICollection<PublishJobDbM> PublishJobDbMs { get; set; } = new List<PublishJobDbM>();
 }

@@ -20,6 +20,13 @@ public class MediaDbRepo
         return media;
     }
 
+    public async Task<PublishJobDbM> CreatePublishJobAsync(PublishJobDbM job)
+    {
+        _dbContext.PublishJobs.Add(job);
+        await _dbContext.SaveChangesAsync();
+        return job;
+    }
+
     public Task<MediaDbM?> GetByIdAsync(Guid organizationId, Guid mediaId)
     {
         return _dbContext.Media

@@ -30,9 +30,9 @@ public class OrganizationDbRepo
             _dbContext.UserOrganizations.Add(new UserOrganizationDbM
             {
                 UserId = organization.OwnerId,
-                OrganizationId = organization.Id,
+                OrganizationDbM = organization,
                 Role = "Owner",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
             });
             await _dbContext.SaveChangesAsync();
             return organization;
@@ -64,9 +64,9 @@ public class OrganizationDbRepo
         .Where(uo => uo.UserId == userId)
         .Select(uo => new OrganizationDto
         {
-            Id = uo.Organization.Id,
-            Name = uo.Organization.Name,
-            OwnerId = uo.Organization.OwnerId,
+            Id = uo.OrganizationDbM.Id,
+            Name = uo.OrganizationDbM.Name,
+            OwnerId = uo.OrganizationDbM.OwnerId,
             Role = uo.Role
         })
         .ToListAsync();

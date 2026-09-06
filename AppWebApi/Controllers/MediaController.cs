@@ -92,7 +92,7 @@ public class MediaController : ControllerBase
 
     [Authorize]
     [HttpPost("{organizationId:guid}/media/{mediaId:guid}/publish")]
-    [ProducesResponseType(200, Type = typeof(ServiceResult<bool>))]
+    [ProducesResponseType(202, Type = typeof(object))]
     [ProducesResponseType(400)]
     public async Task<IActionResult> PublishMedia(Guid organizationId, Guid mediaId, [FromBody] List<Guid> socialAccountIds)
     {
@@ -102,6 +102,11 @@ public class MediaController : ControllerBase
             return Unauthorized();
         }
 
+        if (socialAccountIds is null || socialAccountIds.Count == 0)
+        {
+            return BadRequest("At least one social account must be supplied.");
+        }
+
         var result = await _service.PublishMediaAsync(organizationId, mediaId, socialAccountIds, requestUserId);
 
         if (!result.Success)
@@ -109,7 +114,7 @@ public class MediaController : ControllerBase
             return BadRequest(result);
         }
 
-        return Ok(result);
+        return Accepted(result);
     }
 
     private Guid GetUserIdFromClaims()
