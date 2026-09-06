@@ -17,12 +17,42 @@ public class MainDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<MediaDbM> Media { get; set; }
     public DbSet<PostAnalyticsDbM> PostAnalytics { get; set; }
     public DbSet<OrganizationInvitationDbM> OrganizationInvitations { get; set; }
+    public DbSet<PublishJobDbM> PublishJobs { get; set; }
+    public DbSet<PublishJobAccountDbM> PublishJobAccounts { get; set; }
 
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<PublishJobDbM>()
+            .HasOne(x => x.OrganizationDbM)
+            .WithMany(x => x.PublishJobDbMs)
+            .HasForeignKey(x => x.OrganizationId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<PublishJobDbM>()
+            .HasOne(x => x.MediaDbM)
+            .WithMany()
+            .HasForeignKey(x => x.MediaId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PublishJobAccountDbM>()
+            .HasOne(x => x.PublishJob)
+            .WithMany(x => x.Accounts)
+            .HasForeignKey(x => x.PublishJobId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<PublishJobAccountDbM>()
+            .HasOne(x => x.SocialAccount)
+            .WithMany()
+            .HasForeignKey(x => x.SocialAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PublishJobDbM>().HasIndex(x => x.OrganizationId);
+        modelBuilder.Entity<PublishJobDbM>().HasIndex(x => x.MediaId);
+        modelBuilder.Entity<PublishJobAccountDbM>().HasIndex(x => x.PublishJobId);
+        modelBuilder.Entity<PublishJobAccountDbM>().HasIndex(x => x.SocialAccountId);
+        modelBuilder.Entity<PublishJobAccountDbM>()
+            .HasIndex(x => new { x.PublishJobId, x.SocialAccountId })
+            .IsUnique();
 
         // Organization invitations
         modelBuilder.Entity<OrganizationInvitationDbM>()

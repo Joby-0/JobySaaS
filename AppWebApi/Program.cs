@@ -42,6 +42,11 @@ builder.Services.AddScoped<SocialAccountDbRepo>();
 builder.Services.AddScoped<ISocialAccountService, SocialAccountService>();
 builder.Services.AddScoped<MediaDbRepo>();
 builder.Services.AddScoped<IMediaService, MediaService>();
+builder.Services.AddSingleton<IPublishQueue, PublishQueue>();
+builder.Services.AddScoped<IPublishJobProcessor, PublishJobProcessor>();
+builder.Services.AddScoped<IPublishJobService, PublishJobService>();
+builder.Services.AddScoped<ISocialMediaPublisher, YoutubePublisher>();
+builder.Services.AddHostedService<PublishBackgroundService>();
 
 builder.Services.AddAuthorization(options =>
 {

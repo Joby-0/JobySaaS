@@ -23,7 +23,7 @@ public interface IMediaService
         string description,
         Guid requestUserId);
 
-    Task<ServiceResult<bool>> PublishMediaAsync(
+    Task<ServiceResult<Guid>> PublishMediaAsync(
         Guid organizationId,
         Guid mediaId,
         List<Guid> socialAccountIds,
