@@ -46,10 +46,10 @@ public class YoutubeController : ControllerBase
 
         if (!result.Success)
         {
-            return Redirect($"{"localhost:5055"}/connect?youtube=error&message={Uri.EscapeDataString(result.Message)}");
+            return Redirect($"http://localhost:5055/connect?youtube=error&message={Uri.EscapeDataString(result.Message)}");
         }
 
-        return Redirect($"{"localhost:5055"}/org/{result.Data}/social-accounts?youtube=success");
+        return Redirect($"http://localhost:5055/org/{result.Data}/social-accounts?youtube=success");
     }
 
     [Authorize]
