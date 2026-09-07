@@ -36,7 +36,10 @@ Desktop.ini
 appsettings.Development.json
 secrets.json
 
-
+# SQLite databases
+*.db-shm
+*.db-wal
 *.db*
 *.db
 joby_api.db
+
