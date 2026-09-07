@@ -42,6 +42,8 @@ public class SocialAccountDbRepo
             {
                 existing.AccessToken = account.AccessToken;
                 existing.TokenExpiresAt = account.TokenExpiresAt;
+                existing.RefreshToken = account.RefreshToken;
+                existing.Status = account.Status;
             }
             else
             {

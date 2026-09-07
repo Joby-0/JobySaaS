@@ -35,4 +35,5 @@ public class SocialAccountDetails
 
     public string AccountBanner {get;set;}
 
+    public SocialPlatform Platform {get; set;}
 }

@@ -393,7 +393,7 @@ public class YoutubeService : IYoutubeService
 
         var youtube = clientResult.Data;
 
-        var channelRequest = youtube.Channels.List("snippet,statistics");
+        var channelRequest = youtube.Channels.List("snippet,statistics,contentDetails,brandingSettings");
         channelRequest.Mine = true;
         var channelResponse = await channelRequest.ExecuteAsync();
 
@@ -403,12 +403,15 @@ public class YoutubeService : IYoutubeService
 
         var details = new SocialAccountDetails
         {
+            Platform = SocialPlatform.YouTube,
             AccountName = channel.Snippet.Title,
             Handle = channel.Snippet.CustomUrl,
             ProfileImageUrl = channel.Snippet.Thumbnails.Default__.Url,
             Followers = channel.Statistics.SubscriberCount ?? 0,
             VideoCount = channel.Statistics.VideoCount ?? 0,
-            CommentCount = channel.Statistics.CommentCount ?? 0
+            CommentCount = channel.Statistics.CommentCount ?? 0,
+            Views = channel.Statistics.ViewCount ?? 0,
+            AccountBanner = channel.BrandingSettings?.Image?.BannerExternalUrl ?? ""
         };
 
         return ServiceResult<SocialAccountDetails>.Ok("YouTube account details retrieved.", details);
