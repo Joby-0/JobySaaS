@@ -10,13 +10,15 @@ public class SocialAccountService : ISocialAccountService
 {
     readonly OrganizationDbRepo _orgRepo;
     readonly SocialAccountDbRepo _repo;
+    readonly IYoutubeService _youtubeService;
     private readonly Encryptions _encryptions;
 
-    public SocialAccountService(SocialAccountDbRepo repo, OrganizationDbRepo orgRepo, Encryptions encryptions)
+    public SocialAccountService(SocialAccountDbRepo repo, OrganizationDbRepo orgRepo, Encryptions encryptions, IYoutubeService youtubeService)
     {
         _repo = repo;
         _orgRepo = orgRepo;
         _encryptions = encryptions;
+        _youtubeService = youtubeService;
     }
 
     public async Task<ServiceResult<bool>> DisconnectAccountAsync(Guid orgId, Guid requestUserId, Guid accountId)
@@ -45,6 +47,43 @@ public class SocialAccountService : ISocialAccountService
             Success = true,
             Data = true
         };
+    }
+
+    public async Task<ServiceResult<SocialAccountDetails>> GetAccountDetailsAsync(Guid orgId, Guid requestUserId, Guid accountId)
+    {
+        var account = await _repo.GetSocialAccountByIdAsync(accountId);
+        if (account == null)
+            return ServiceResult<SocialAccountDetails>.Fail("Account was not found");
+
+        var platform = account.Platform;
+
+        ServiceResult<SocialAccountDetails> details = new ServiceResult<SocialAccountDetails>();
+        if (platform == SocialPlatform.YouTube)
+        {
+            details = await _youtubeService.GetAccountDetailsAsync(account);
+        }
+        else if (platform == SocialPlatform.TikTok)
+        {
+
+        }
+        else if (platform == SocialPlatform.Instagram)
+        {
+
+        }
+        else if (platform == SocialPlatform.X)
+        {
+
+        }
+        else if (platform == SocialPlatform.LinkedIn)
+        {
+
+        }
+        else if (platform == SocialPlatform.Facebook)
+        {
+
+        }
+
+        return details;
     }
 
     public async Task<ServiceResult<List<SocialAccountDto>>> GetConnectedAccountsAsync(Guid orgId, Guid requestUserId)

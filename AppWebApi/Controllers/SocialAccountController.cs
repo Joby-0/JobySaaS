@@ -47,6 +47,19 @@ public class SocialAccountController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize]
+    [HttpGet("{organizationId:guid}/details")]
+    public async Task<IActionResult> GetAccountDetails(Guid organizationId, [FromQuery] Guid accountId)
+    {
+        var requestUserId = GetUserIdFromClaims();
+
+        var result = await _service.GetAccountDetailsAsync(organizationId, requestUserId, accountId);
+
+        if(!result.Success)
+            return BadRequest(result);
+        
+        return Ok(result);
+    }
     private Guid GetUserIdFromClaims()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

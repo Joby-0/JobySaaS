@@ -107,6 +107,9 @@ public class YoutubeService : IYoutubeService
             if (string.IsNullOrEmpty(tokenResponse.RefreshToken))
                 return ServiceResult<Guid>.Fail("No refresh token was returned.");
 
+            // This is the one place we build a client from a "raw", not-yet-stored token
+            // (there's no SocialAccount row to hang it off yet), so it doesn't go through
+            // GetYoutubeClientAsync.
             var credential = GoogleCredential.FromAccessToken(tokenResponse.AccessToken);
             var youtube = new GoogleYouTubeService(new BaseClientService.Initializer
             {
@@ -156,7 +159,6 @@ public class YoutubeService : IYoutubeService
         }
     }
 
-
     private async Task<TokenResponse> HandleCallback(string code)
     {
         // In a real implementation, this would exchange the 'code' for an access token.
@@ -183,6 +185,39 @@ public class YoutubeService : IYoutubeService
         return token;
     }
 
+    private async Task<ServiceResult<GoogleYouTubeService>> GetYoutubeClientAsync(ISocialAccount account)
+    {
+        if (!IsAccessTokenValid(account))
+        {
+            var refreshResult = await RefreshTokenAsync(account);
+            if (!refreshResult.Success)
+                return ServiceResult<GoogleYouTubeService>.Fail(refreshResult.Error!);
+
+        }
+
+        string accessToken;
+        try
+        {
+            accessToken = _encryptions.AesDecryptFromBase64<string>(account.AccessToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to decrypt YouTube access token for social account {AccountId}.", account.Id);
+            return ServiceResult<GoogleYouTubeService>.Fail("Failed to read the stored access token.");
+        }
+
+        if (string.IsNullOrEmpty(accessToken))
+            return ServiceResult<GoogleYouTubeService>.Fail("Access token is missing.");
+
+        var credential = GoogleCredential.FromAccessToken(accessToken);
+        var youtube = new GoogleYouTubeService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = "AllMedia"
+        });
+
+        return ServiceResult<GoogleYouTubeService>.Ok("",youtube);
+    }
     public async Task<ServiceResult<string>> UploadVideoAsync(Guid mediaId, string title, string description, string categoryId, Guid accountId, Guid requestUserId)
     {
         var account = await _repo.GetSocialAccountByIdAsync(accountId);
@@ -199,30 +234,13 @@ public class YoutubeService : IYoutubeService
         if (media.FileContent is null || media.FileContent.Length == 0)
             return ServiceResult<string>.Fail("The selected media has no stored file content.");
 
-        // Kollar om access token är giltig, annars refreshar den
-        var tokenResult = await GetAccessTokenAsync(accountId);
+        // Ready-to-use client for this account — refreshes the token behind the scenes if needed.
+        var clientResult = await GetYoutubeClientAsync(account);
+        if (!clientResult.Success)
+            return ServiceResult<string>.Fail(clientResult.Error!);
 
-        //om tokenResult inte är success, returnera fail med error
-        if (!tokenResult.Success)
-        {
-            return ServiceResult<string>.Fail(tokenResult.Error!);
-        }
+        var youtube = clientResult.Data;
 
-        var accessToken = tokenResult.Message; //the token is the message here
-
-        if (string.IsNullOrEmpty(accessToken))
-        {
-            return ServiceResult<string>.Fail("Access token is missing.");
-        }
-
-
-        // YouTube upload goes here
-        var credential = GoogleCredential.FromAccessToken(accessToken);
-        var youtube = new GoogleYouTubeService(new BaseClientService.Initializer
-        {
-            HttpClientInitializer = credential,
-            ApplicationName = "AllMedia"
-        });
         var youtubeVideo = new Video
         {
             Snippet = new VideoSnippet
@@ -264,38 +282,31 @@ public class YoutubeService : IYoutubeService
 
         return ServiceResult<string>.Ok("Video uploaded successfully.", videoId);
     }
-
-    public async Task<ServiceResult<string>> GetAccessTokenAsync(Guid userId)
+    public async Task<ServiceResult<string>> GetAccessTokenAsync(Guid accountId)
     {
-
-        var account = await _repo.GetSocialAccountByIdAsync(userId);
+        var account = await _repo.GetSocialAccountByIdAsync(accountId);
         if (account == null)
         {
             return ServiceResult<string>.Fail("Social account not found.");
         }
-        // om giltig hoppar över den här delen och returnerar access token
-        if (!IsAccessTokenValid(account))
+
+        // If the token is still valid, just decrypt and hand it back.
+        if (IsAccessTokenValid(account))
         {
-            // Refresh token
-            var refreshResult = await RefreshTokenAsync(account);
-
-            if (!refreshResult.Success)
-            {
-                return ServiceResult<string>.Fail(refreshResult.Error!);
-            }
-            //hämtar den nya access token från databasen, eftersom den kan ha uppdaterats annars får man den gamla access token som inte är giltig
-            var socialAccount = await _repo.GetSocialAccountByIdAsync(account.Id);
-
-            //borde inte kunna vara null, men kollar ändå
-            if (socialAccount == null)
-            {
-                return ServiceResult<string>.Fail("Social account not found.");
-            }
-            //returnerar den nya access token som message
-            return ServiceResult<string>.Ok(socialAccount.AccessToken);
+            return ServiceResult<string>.Ok("Access token is valid.", _encryptions.AesDecryptFromBase64<string>(account.AccessToken));
         }
 
-        return ServiceResult<string>.Ok(_encryptions.AesDecryptFromBase64<string>(account.AccessToken));
+        // Otherwise refresh it. RefreshTokenAsync updates `account` in place (encrypted)
+        // and persists it, so we can decrypt straight from it afterwards — no need to
+        // re-fetch from the repo.
+        var refreshResult = await RefreshTokenAsync(account);
+
+        if (!refreshResult.Success)
+        {
+            return ServiceResult<string>.Fail(refreshResult.Error!);
+        }
+
+        return ServiceResult<string>.Ok("Access token refreshed.", _encryptions.AesDecryptFromBase64<string>(account.AccessToken));
     }
     public async Task<ServiceResult<string>> RefreshTokenAsync(ISocialAccount account)
     {
@@ -303,8 +314,7 @@ public class YoutubeService : IYoutubeService
         {
             if (string.IsNullOrEmpty(account.RefreshToken))
             {
-                return ServiceResult<string>.Fail(
-                    "No refresh token is available.");
+                return ServiceResult<string>.Fail("No refresh token is available.");
             }
 
             var flow = new GoogleAuthorizationCodeFlow(
@@ -320,28 +330,21 @@ public class YoutubeService : IYoutubeService
 
             var refreshTokenDecrypted = _encryptions.AesDecryptFromBase64<string>(account.RefreshToken);
 
-            var newToken = await flow.RefreshTokenAsync(
-                "user",
-                refreshTokenDecrypted,
-                CancellationToken.None);
+            var newToken = await flow.RefreshTokenAsync("user", refreshTokenDecrypted, CancellationToken.None);
 
             if (string.IsNullOrEmpty(newToken.AccessToken))
             {
-                return ServiceResult<string>.Fail(
-                    "Google did not return a new access token.");
+                return ServiceResult<string>.Fail("Google did not return a new access token.");
             }
+           
+            account.AccessToken = _encryptions.AesEncryptToBase64(newToken.AccessToken);
 
-            account.AccessToken = newToken.AccessToken;
+            account.TokenExpiresAt = DateTime.UtcNow.AddSeconds(newToken.ExpiresInSeconds ?? 3600);
 
-            account.TokenExpiresAt =
-                DateTime.UtcNow.AddSeconds(
-                    newToken.ExpiresInSeconds ?? 3600);
-
-            // Google doesn't necessarily return a new refresh token.
-            // Keep the old one if it doesn't.
+            
             var refreshToken = string.IsNullOrEmpty(newToken.RefreshToken)
                 ? account.RefreshToken
-                : newToken.RefreshToken;
+                : _encryptions.AesEncryptToBase64(newToken.RefreshToken);
 
             account.RefreshToken = refreshToken;
 
@@ -356,40 +359,58 @@ public class YoutubeService : IYoutubeService
                     RefreshToken = refreshToken
                 });
 
-            return ServiceResult<string>.Ok(
-                "YouTube access token refreshed successfully.",
-                newToken.AccessToken);
+            return ServiceResult<string>.Ok("YouTube access token refreshed successfully.", newToken.AccessToken);
         }
         catch (TokenResponseException ex)
         {
-            _logger.LogError(
-                ex,
-                "Failed to refresh YouTube token for social account {AccountId}.",
-                account.Id);
+            _logger.LogError(ex,"Failed to refresh YouTube token for social account {AccountId}.", account.Id);
 
             if (ex.Error?.Error == "invalid_grant")
             {
-                return ServiceResult<string>.Fail(
-                    "The YouTube authorization is no longer valid. The account needs to be reconnected.");
+                return ServiceResult<string>.Fail("The YouTube authorization is no longer valid. The account needs to be reconnected.");
             }
 
-            return ServiceResult<string>.Fail(
-                $"Failed to refresh YouTube access token: {ex.Error?.Error}");
+            return ServiceResult<string>.Fail($"Failed to refresh YouTube access token: {ex.Error?.Error}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Failed to refresh YouTube access token for social account {AccountId}.",
-                account.Id);
+            _logger.LogError(ex, "Failed to refresh YouTube access token for social account {AccountId}.", account.Id);
 
-            return ServiceResult<string>.Fail(
-                "Failed to refresh YouTube access token.");
+            return ServiceResult<string>.Fail("Failed to refresh YouTube access token.");
         }
     }
     private bool IsAccessTokenValid(ISocialAccount account)
     {
         return !string.IsNullOrEmpty(account.AccessToken)
             && account.TokenExpiresAt > DateTime.UtcNow.AddMinutes(5);
+    }
+
+    public async Task<ServiceResult<SocialAccountDetails>> GetAccountDetailsAsync(SocialAccountDbM account)
+    {
+        var clientResult = await GetYoutubeClientAsync(account);
+        if (!clientResult.Success)
+            return ServiceResult<SocialAccountDetails>.Fail(clientResult.Error!);
+
+        var youtube = clientResult.Data;
+
+        var channelRequest = youtube.Channels.List("snippet,statistics");
+        channelRequest.Mine = true;
+        var channelResponse = await channelRequest.ExecuteAsync();
+
+        var channel = channelResponse.Items?.FirstOrDefault();
+        if (channel is null)
+            return ServiceResult<SocialAccountDetails>.Fail("No YouTube channel was found for this account.");
+
+        var details = new SocialAccountDetails
+        {
+            AccountName = channel.Snippet.Title,
+            Handle = channel.Snippet.CustomUrl,
+            ProfileImageUrl = channel.Snippet.Thumbnails.Default__.Url,
+            Followers = channel.Statistics.SubscriberCount ?? 0,
+            VideoCount = channel.Statistics.VideoCount ?? 0,
+            CommentCount = channel.Statistics.CommentCount ?? 0
+        };
+
+        return ServiceResult<SocialAccountDetails>.Ok("YouTube account details retrieved.", details);
     }
 }
