@@ -21,6 +21,8 @@ public class SocialAccountController : ControllerBase
 
     [Authorize]
     [HttpGet("{organizationId:guid}/mine")]
+    [ProducesResponseType(200, Type = typeof(ServiceResult<List<SocialAccountDto>>))]
+    [ProducesResponseType(400, Type = typeof(ServiceResult<List<SocialAccountDto>>))]
     public async Task<IActionResult> GetConnectedAccounts(Guid organizationId)
     {
         var requestUserId = GetUserIdFromClaims();
@@ -34,7 +36,9 @@ public class SocialAccountController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("{organizationId:guid}/disconnect")]
+    [HttpDelete("{organizationId:guid}/disconnect")]
+    [ProducesResponseType(200, Type = typeof(ServiceResult<bool>))]
+    [ProducesResponseType(400, Type = typeof(ServiceResult<bool>))]
     public async Task<IActionResult> DisconnectAccount(Guid organizationId, [FromQuery] Guid accountId)
     {
         var requestUserId = GetUserIdFromClaims();
@@ -49,15 +53,17 @@ public class SocialAccountController : ControllerBase
 
     [Authorize]
     [HttpGet("{organizationId:guid}/details")]
+    [ProducesResponseType(200, Type = typeof(ServiceResult<SocialAccountDetails>))]
+    [ProducesResponseType(400, Type = typeof(ServiceResult<SocialAccountDetails>))]
     public async Task<IActionResult> GetAccountDetails(Guid organizationId, [FromQuery] Guid accountId)
     {
         var requestUserId = GetUserIdFromClaims();
 
         var result = await _service.GetAccountDetailsAsync(organizationId, requestUserId, accountId);
 
-        if(!result.Success)
+        if (!result.Success)
             return BadRequest(result);
-        
+
         return Ok(result);
     }
     private Guid GetUserIdFromClaims()
