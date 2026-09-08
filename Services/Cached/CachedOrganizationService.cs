@@ -18,18 +18,18 @@ public class CachedOrganizationService : IOrganizationService
         _cache = cache;
     }
 
-    public Task<IOrganization> CreateOrganizationAsync(CreateOrganizationRequest request, Guid ownerId, string ownerUserName, string email) => _service.CreateOrganizationAsync(request, ownerId, ownerUserName, email);
+    public Task<ServiceResult<OrganizationDto>> CreateOrganizationAsync(CreateOrganizationRequest request, Guid ownerId, string ownerUserName, string email) => _service.CreateOrganizationAsync(request, ownerId, ownerUserName, email);
 
-    public Task<IOrganization> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId) => _service.GetOrganizationByIdAsync(organizationId, requestUserId);
+    public Task<ServiceResult<OrganizationDto>> GetOrganizationByIdAsync(Guid organizationId, Guid requestUserId) => _service.GetOrganizationByIdAsync(organizationId, requestUserId);
 
     public Task<ServiceResult<List<OrganizationMemberDTO>>> GetOrganizationMembersAsync(Guid organizationId, Guid requestUserId) => _service.GetOrganizationMembersAsync(organizationId, requestUserId);
 
-    public async Task<List<OrganizationDto>> GetOrganizationsForUserAsync(Guid userId)
+    public async Task<ServiceResult<List<OrganizationDto>>> GetOrganizationsForUserAsync(Guid userId)
     {
         var key = $"organizations:{userId}";
 
-        if (_cache.TryGetValue(key, out List<OrganizationDto>? organizations))
-            return organizations!;
+        if (_cache.TryGetValue<ServiceResult<List<OrganizationDto>>>(key, out var organizations))
+            return organizations;
 
         organizations = await _service.GetOrganizationsForUserAsync(userId);
 
