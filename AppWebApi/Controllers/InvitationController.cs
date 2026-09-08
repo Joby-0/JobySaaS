@@ -45,6 +45,10 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(400)]
     public async Task<IActionResult> GetInviteInfo([FromQuery] string code)
     {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return BadRequest(ServiceResult<InvitationPreviewDto>.Fail("Invite code is required."));
+        }
         var result = await _service.GetInviteAsync(code);
 
         if (!result.Success)
@@ -64,12 +68,16 @@ public class InvitationController : ControllerBase
         {
             return Unauthorized();
         }
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return BadRequest(ServiceResult<bool>.Fail("Invite code is required."));
+        }
         var result = await _service.AcceptInvitationAsync(code, requestUserId);
-        
+
         return Ok(result);
     }
 
-     private Guid GetUserIdFromClaims()
+    private Guid GetUserIdFromClaims()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userId, out var requestUserId))
