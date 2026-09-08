@@ -66,6 +66,19 @@ public class SocialAccountController : ControllerBase
 
         return Ok(result);
     }
+    [Authorize]
+    [HttpGet("{organizationId:guid}/performance")]
+    public async Task<IActionResult> GetAccountPerformance(Guid organizationId, [FromQuery] Guid accountId, [FromQuery] DateOnly startDate, [FromQuery] DateOnly endDate, CancellationToken ct)
+    {
+        var requestUserId = GetUserIdFromClaims();
+
+        var result = await _service.GetAccountPerformanceAsync(organizationId, requestUserId, accountId,startDate, endDate, ct);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
     private Guid GetUserIdFromClaims()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

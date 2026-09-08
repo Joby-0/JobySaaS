@@ -14,6 +14,8 @@ public interface IYoutubeService
     Task<ServiceResult<string>> UploadVideoAsync(Guid mediaId, string title, string description, string categoryId, Guid accountId, Guid requestUserId);
     Task<ServiceResult<SocialAccountDetails>> GetAccountDetailsAsync(SocialAccountDbM account);
 
+    Task<ServiceResult<List<DailyMetricDto>>> GetAccountPerformanceAsync(Guid accountId, DateOnly startDate, DateOnly endDate, Guid requestUserId, CancellationToken ct);
+
     Task<ServiceResult<string>> RefreshTokenAsync(ISocialAccount socialAccount);
     Task<ServiceResult<string>> GetAccessTokenAsync(Guid userId);
 }

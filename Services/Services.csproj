@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.75.0" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.75.0.4207" />
+    <PackageReference Include="Google.Apis.YouTubeAnalytics.v2" Version="1.74.0.3106" />
     <PackageReference Include="Stripe.net" Version="52.3.0" />
   </ItemGroup>
 </Project>

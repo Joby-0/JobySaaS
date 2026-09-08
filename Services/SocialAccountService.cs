@@ -85,6 +85,42 @@ public class SocialAccountService : ISocialAccountService
 
         return details;
     }
+    public async Task<ServiceResult<List<DailyMetricDto>>> GetAccountPerformanceAsync(Guid orgId, Guid requestUserId, Guid accountId, DateOnly startDate, DateOnly endDate, CancellationToken ct)
+    {
+        var account = await _repo.GetSocialAccountByIdAsync(accountId);
+        if (account == null)
+            return ServiceResult<List<DailyMetricDto>>.Fail("Account was not found");
+
+        var platform = account.Platform;
+
+        ServiceResult<List<DailyMetricDto>> details = new ServiceResult<List<DailyMetricDto>>();
+        if (platform == SocialPlatform.YouTube)
+        {
+            details = await _youtubeService.GetAccountPerformanceAsync(accountId, startDate, endDate, requestUserId, ct);
+        }
+        else if (platform == SocialPlatform.TikTok)
+        {
+
+        }
+        else if (platform == SocialPlatform.Instagram)
+        {
+
+        }
+        else if (platform == SocialPlatform.X)
+        {
+
+        }
+        else if (platform == SocialPlatform.LinkedIn)
+        {
+
+        }
+        else if (platform == SocialPlatform.Facebook)
+        {
+
+        }
+
+        return details;
+    }
 
     public async Task<ServiceResult<List<SocialAccountDto>>> GetConnectedAccountsAsync(Guid orgId, Guid requestUserId)
     {
@@ -124,4 +160,6 @@ public class SocialAccountService : ISocialAccountService
             }).ToList()
         };
     }
+
+
 }
