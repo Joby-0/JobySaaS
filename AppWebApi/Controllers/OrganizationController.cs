@@ -28,8 +28,8 @@ namespace AppWebApi.Controllers
 
         [Authorize]
         [HttpPost("create")]
-        [ProducesResponseType(200, Type = typeof(IOrganization))]
-        [ProducesResponseType(400, Type = typeof(string))]
+        [ProducesResponseType(200, Type = typeof(ServiceResult<OrganizationDto>))]
+        [ProducesResponseType(400, Type = typeof(ServiceResult<OrganizationDto>))]
         public async Task<IActionResult> CreateOrganization([FromBody] CreateOrganizationRequest request)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -40,42 +40,57 @@ namespace AppWebApi.Controllers
             {
                 return Unauthorized();
             }
+
             var result = await _organizationService.CreateOrganizationAsync(request, ownerId, userName, email);
-            return CreatedAtAction(nameof(GetOrganization), new { organizationId = result.Id }, result);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
         [Authorize]
         [HttpGet("{organizationId:guid}/get")]
-        [ProducesResponseType(200, Type = typeof(IOrganization))]
-        [ProducesResponseType(400, Type = typeof(string))]
+        [ProducesResponseType(200, Type = typeof(ServiceResult<OrganizationDto>))]
+        [ProducesResponseType(400, Type = typeof(ServiceResult<OrganizationDto>))]
         public async Task<IActionResult> GetOrganization(Guid organizationId)
         {
             var requestUserId = GetUserIdFromClaims();
 
-            var organization = await _organizationService.GetOrganizationByIdAsync(organizationId, requestUserId);
+            var result = await _organizationService.GetOrganizationByIdAsync(organizationId, requestUserId);
 
-            if (organization == null)
+            if (result == null)
             {
                 return NotFound();
             }
-            return Ok(organization);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
         [Authorize]
         [HttpGet("mine")]
-        [ProducesResponseType(200, Type = typeof(List<IOrganization>))]
+        [ProducesResponseType(200, Type = typeof(ServiceResult<List<OrganizationDto>>))]
         public async Task<IActionResult> GetMyOrganizations()
         {
             var requestUserId = GetUserIdFromClaims();
 
-            var organizations = await _organizationService.GetOrganizationsForUserAsync(requestUserId);
-            return Ok(organizations);
+            var result = await _organizationService.GetOrganizationsForUserAsync(requestUserId);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
         [Authorize]
         [HttpGet("{id}/members")]
         [ProducesResponseType(200, Type = typeof(ServiceResult<List<OrganizationMemberDTO>>))]
-        [ProducesResponseType(400, Type = typeof(string))]
+        [ProducesResponseType(400, Type = typeof(ServiceResult<List<OrganizationMemberDTO>>))]
         public async Task<IActionResult> GetMembers(Guid id)
         {
             var requestUserId = GetUserIdFromClaims();
@@ -83,7 +98,7 @@ namespace AppWebApi.Controllers
             var result = await _organizationService.GetOrganizationMembersAsync(id, requestUserId);
             if (!result.Success)
             {
-                return Forbid(result.Message);
+                return BadRequest(result);
             }
             return Ok(result);
         }
@@ -91,17 +106,24 @@ namespace AppWebApi.Controllers
         [Authorize]
         [HttpDelete("{id}/members/{userId}/remove")]
         [ProducesResponseType(200, Type = typeof(ServiceResult<string>))]
-        [ProducesResponseType(400, Type = typeof(string))]
+        [ProducesResponseType(400, Type = typeof(ServiceResult<string>))]
         public async Task<IActionResult> RemoveMember(Guid id, Guid userId)
         {
             var requestUserId = GetUserIdFromClaims();
-            
+
+            if (requestUserId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             var result = await _organizationService.RemoveOrganizationMemberAsync(id, userId, requestUserId);
+
             if (!result.Success)
             {
-                return Forbid(result.Message);
+                return BadRequest(result);
             }
-            return Ok(result.Data);
+
+            return Ok(result);
         }
 
         //Todo

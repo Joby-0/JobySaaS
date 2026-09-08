@@ -21,4 +21,12 @@ public class OrganizationDto
     public string Name { get; set; }
     public Guid OwnerId { get; set; }
     public string Role { get; set; } 
+
+    public OrganizationDto(){}
+    public OrganizationDto(IOrganization o)
+    {
+        Id = o.Id;
+        OwnerId = o.OwnerId;
+        Name = o.Name;
+    }
 }
