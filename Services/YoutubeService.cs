@@ -288,12 +288,7 @@ public class YoutubeService : IYoutubeService
         }
         catch (Google.GoogleApiException ex)
         {
-            _logger.LogError(
-                ex,
-                "YouTube Analytics failed. Status: {Status}, Message: {Message}, Error: {Error}",
-                ex.HttpStatusCode,
-                ex.Message,
-                ex.Error?.Message);
+            _logger.LogError(ex, "YouTube Analytics failed. Status: {Status}, Message: {Message}, Error: {Error}", ex.HttpStatusCode, ex.Message, ex.Error?.Message);
 
             throw;
         }
