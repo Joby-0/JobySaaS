@@ -345,7 +345,7 @@ public class YoutubeService : IYoutubeService
         }
 
         // 4. Get video details/statistics
-        var videosRequest = youtube.Data.Videos.List("snippet,statistics,contentDetails");
+        var videosRequest = youtube.Data.Videos.List("snippet,status,statistics,contentDetails");
 
         videosRequest.Id = videoIds;
 
