@@ -375,7 +375,9 @@ public class YoutubeService : IYoutubeService
 
                 Comments = video.Statistics.CommentCount.Value,
 
-                Duration = video.ContentDetails.Duration
+                Duration = video.ContentDetails.Duration,
+
+                PrivacyStatus = video.Status.PrivacyStatus
             })
             .ToList();
 
