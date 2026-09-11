@@ -48,3 +48,17 @@ public class DailyMetricDto
     public long Shares { get; set; }
     public long SubscribersGained { get; set; }
 }
+public class RecentVideoDto
+{
+    public string VideoId { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public string ThumbnailUrl { get; set; }
+    public DateTime PublishedAt { get; set; }
+
+    public ulong Views { get; set; }
+    public ulong Likes { get; set; }
+    public ulong Comments { get; set; }
+
+    public string Duration { get; set; }
+}

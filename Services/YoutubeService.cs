@@ -258,16 +258,8 @@ public class YoutubeService : IYoutubeService
         return ServiceResult<SocialAccountDetails>.Ok("YouTube account details retrieved.", details);
     }
 
-    public async Task<ServiceResult<List<DailyMetricDto>>> GetAccountPerformanceAsync(Guid accountId, DateOnly startDate, DateOnly endDate, Guid requestUserId, CancellationToken ct)
+    public async Task<ServiceResult<List<DailyMetricDto>>> GetAccountPerformanceAsync(ISocialAccount account, DateOnly startDate, DateOnly endDate, CancellationToken ct)
     {
-        var account = await _repo.GetSocialAccountByIdAsync(accountId);
-        if (account is null || account.Platform != SocialPlatform.YouTube)
-            return ServiceResult<List<DailyMetricDto>>.Fail("The selected YouTube account could not be found.");
-
-        var membership = await _organizationRepo.GetUserOrganizationAsync(account.OrganizationId, requestUserId);
-        if (membership is null)
-            return ServiceResult<List<DailyMetricDto>>.Fail("You do not have access to this organization.");
-
         var clientResult = await GetYoutubeAnalyticsClientAsync(account);
         if (!clientResult.Success)
             return ServiceResult<List<DailyMetricDto>>.Fail(clientResult.Error!);
@@ -292,13 +284,110 @@ public class YoutubeService : IYoutubeService
 
             throw;
         }
-        
+
     }
 
+    public async Task<ServiceResult<PagedResult<RecentVideoDto>>> GetAccountVideosAsync(ISocialAccount account, int pageNumber, int pageSize, string order, CancellationToken ct)
+    {
+        var youtube = await GetYoutubeDataClientAsync(account);
 
+        // 1. Get channel
+        var channelRequest = youtube.Data.Channels.List("snippet,contentDetails");
 
+        channelRequest.Mine = true;
 
+        var channelResponse = await channelRequest.ExecuteAsync(ct);
 
+        var channel = channelResponse.Items.FirstOrDefault();
+
+        if (channel is null)
+        {
+            return ServiceResult<PagedResult<RecentVideoDto>>.Fail("YouTube channel could not be found.");
+        }
+
+        // 2. Get uploads playlist
+        var uploadsPlaylistId = channel.ContentDetails.RelatedPlaylists.Uploads;
+
+        if (string.IsNullOrEmpty(uploadsPlaylistId))
+        {
+            return ServiceResult<PagedResult<RecentVideoDto>>.Fail("YouTube uploads playlist could not be found.");
+        }
+
+        // 3. Get videos from uploads playlist
+        var playlistRequest = youtube.Data.PlaylistItems.List("snippet,contentDetails");
+
+        playlistRequest.PlaylistId = uploadsPlaylistId;
+        playlistRequest.MaxResults = Math.Min(pageSize, 50);
+
+        // YouTube pagination uses a page token,
+        // not a page number.
+        //
+        // For now, pageNumber > 1 isn't directly supported
+        // without walking through previous pages.
+
+        var playlistResponse = await playlistRequest.ExecuteAsync(ct);
+
+        var videoIds = playlistResponse.Items
+            .Select(x => x.ContentDetails.VideoId)
+            .Where(x => !string.IsNullOrEmpty(x))
+            .ToList();
+
+        if (videoIds.Count == 0)
+        {
+            return ServiceResult<PagedResult<RecentVideoDto>>.Ok("",
+                new PagedResult<RecentVideoDto>
+                {
+                    Items = [],
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    HasNextPage = !string.IsNullOrEmpty(playlistResponse.NextPageToken)
+                });
+        }
+
+        // 4. Get video details/statistics
+        var videosRequest = youtube.Data.Videos.List("snippet,statistics,contentDetails");
+
+        videosRequest.Id = videoIds;
+
+        var videosResponse = await videosRequest.ExecuteAsync(ct);
+
+        // 5. Map to your DTO
+        var videos = videosResponse.Items
+            .Select(video => new RecentVideoDto
+            {
+                VideoId = video.Id,
+
+                Title = video.Snippet.Title,
+
+                Description = video.Snippet.Description,
+
+                ThumbnailUrl =
+                    video.Snippet.Thumbnails.Medium.Url,
+
+                PublishedAt =
+                    video.Snippet.PublishedAtDateTimeOffset
+                        ?.UtcDateTime
+                        ?? DateTime.MinValue,
+
+                Views =  video.Statistics.ViewCount.Value,
+
+                Likes = video.Statistics.LikeCount.Value,
+
+                Comments = video.Statistics.CommentCount.Value,
+
+                Duration = video.ContentDetails.Duration
+            })
+            .ToList();
+
+        return ServiceResult<PagedResult<RecentVideoDto>>.Ok("",
+            new PagedResult<RecentVideoDto>
+            {
+                Items = videos,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                HasNextPage = !string.IsNullOrEmpty(playlistResponse.NextPageToken)
+            });
+    }
 
 
 
@@ -514,6 +603,5 @@ public class YoutubeService : IYoutubeService
 
         return result;
     }
-
 
 }

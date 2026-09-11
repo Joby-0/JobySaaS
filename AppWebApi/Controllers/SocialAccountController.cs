@@ -79,6 +79,19 @@ public class SocialAccountController : ControllerBase
 
         return Ok(result);
     }
+    [Authorize]
+    [HttpGet("{organizationId:guid}/videos")]
+    public async Task<IActionResult> GetAccountRecentVideos(Guid organizationId, [FromQuery] Guid accountId, CancellationToken ct, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string order = "recent")
+    {
+        var requestUserId = GetUserIdFromClaims();
+
+        var result = await _service.GetAccountVideosAsync(organizationId, requestUserId, accountId,pageNumber,pageSize,order, ct);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
     private Guid GetUserIdFromClaims()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
