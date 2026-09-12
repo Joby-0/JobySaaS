@@ -16,7 +16,7 @@ public class InvitationService : IInvitationService
         _orgRepo = orgRepo;
         _usrRepo = usrRepo;
     }
-    public async Task<ServiceResult<string>> CreateInviteCodeAsync(Guid organizationId, Guid requestUserId, int expireInMinutes)
+    public async Task<ServiceResult<string>> CreateInviteCodeAsync(Guid organizationId, Guid requestUserId, int expireInMinutes, string? email)
     {
         var userOrganization = await _orgRepo.GetUserOrganizationAsync(organizationId, requestUserId);
 
@@ -49,7 +49,8 @@ public class InvitationService : IInvitationService
             CreatedAt = now,
             ExpiresAt = now.AddMinutes(expireInMinutes),
             AcceptedAt = null,
-            IsActive = true
+            IsActive = true,
+            InvitedEmail = email
         };
 
         await _repo.CreateInviteCodeAsync(inviteCode);

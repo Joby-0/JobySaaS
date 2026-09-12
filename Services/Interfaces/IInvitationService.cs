@@ -5,7 +5,7 @@ namespace Services;
 
 public interface IInvitationService
 {
-    Task<ServiceResult<string>> CreateInviteCodeAsync(Guid organizationId, Guid requestUserId,int expireInMinutes);
+    Task<ServiceResult<string>> CreateInviteCodeAsync(Guid organizationId, Guid requestUserId,int expireInMinutes, string? email);
     
     Task<ServiceResult<InvitationPreviewDto>> GetInviteAsync(string inviteCode);
 
