@@ -22,7 +22,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(401)]
     [ProducesResponseType(403)]
     [ProducesResponseType(400)]
-    public async Task<IActionResult> CreateInviteCode(Guid organizationId, [FromQuery] int expireInMinutes)
+    public async Task<IActionResult> CreateInviteCode(Guid organizationId, [FromQuery] int expireInMinutes, [FromQuery] string? email)
     {
         var requestUserId = GetUserIdFromClaims();
         if (requestUserId == Guid.Empty)
@@ -30,7 +30,7 @@ public class InvitationController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _service.CreateInviteCodeAsync(organizationId, requestUserId, expireInMinutes);
+        var result = await _service.CreateInviteCodeAsync(organizationId, requestUserId, expireInMinutes,email);
 
         if (!result.Success)
         {
