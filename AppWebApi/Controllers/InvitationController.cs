@@ -17,8 +17,8 @@ public class InvitationController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("{organizationId:guid}/create")]
-    [ProducesResponseType(200, Type = typeof(ServiceResult<string>))]
+    [HttpGet("{organizationId:guid}/create")]
+    [ProducesResponseType(200, Type = typeof(ServiceResult<InvitationDto>))]
     [ProducesResponseType(401)]
     [ProducesResponseType(403)]
     [ProducesResponseType(400)]

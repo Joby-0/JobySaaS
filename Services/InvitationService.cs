@@ -16,24 +16,24 @@ public class InvitationService : IInvitationService
         _orgRepo = orgRepo;
         _usrRepo = usrRepo;
     }
-    public async Task<ServiceResult<string>> CreateInviteCodeAsync(Guid organizationId, Guid requestUserId, int expireInMinutes, string? email)
+    public async Task<ServiceResult<InvitationDto>> CreateInviteCodeAsync(Guid organizationId, Guid requestUserId, int expireInMinutes, string? email)
     {
         var userOrganization = await _orgRepo.GetUserOrganizationAsync(organizationId, requestUserId);
 
         if (userOrganization == null)
         {
-            return ServiceResult<string>.Fail("You are not a member of this organization.");
+            return ServiceResult<InvitationDto>.Fail("You are not a member of this organization.");
         }
 
         if (userOrganization.Role != "Owner" && userOrganization.Role != "Admin")
         {
-            return ServiceResult<string>.Fail("You are not authorized to create invite codes.");
+            return ServiceResult<InvitationDto>.Fail("You are not authorized to create invite codes.");
         }
 
         // Only allow specific expiration times
         if (expireInMinutes != 5 && expireInMinutes != 15 && expireInMinutes != 60 && expireInMinutes != 1440)
         {
-            return ServiceResult<string>.Fail("Invalid expiration time. Allowed values are 5, 15, 60 or 1440 minutes.");
+            return ServiceResult<InvitationDto>.Fail("Invalid expiration time. Allowed values are 5, 15, 60 or 1440 minutes.");
         }
 
         var now = DateTime.UtcNow;
@@ -55,7 +55,7 @@ public class InvitationService : IInvitationService
 
         await _repo.CreateInviteCodeAsync(inviteCode);
 
-        return ServiceResult<string>.Ok("Invite code created successfully.", code);
+        return ServiceResult<InvitationDto>.Ok("Invite code created successfully.", new InvitationDto{code = inviteCode.InviteCode, ExpiresAt = inviteCode.ExpiresAt});
     }
 
     public async Task<ServiceResult<InvitationPreviewDto>> GetInviteAsync(string inviteCode)

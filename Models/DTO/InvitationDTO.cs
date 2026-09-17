@@ -15,3 +15,8 @@ public class InvitationUpdate
     public DateTime? AcceptedAt { get; set; }
 
 }
+public class InvitationDto
+{
+    public string code {get; set;}
+    public DateTime ExpiresAt {get; set;}
+}
