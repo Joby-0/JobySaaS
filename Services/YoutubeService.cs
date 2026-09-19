@@ -291,6 +291,10 @@ public class YoutubeService : IYoutubeService
     {
         var youtube = await GetYoutubeDataClientAsync(account);
 
+        if (!youtube.Success)
+        {
+            return ServiceResult<PagedResult<RecentVideoDto>>.Fail(youtube.Error);
+        }
         // 1. Get channel
         var channelRequest = youtube.Data.Channels.List("snippet,contentDetails");
 
